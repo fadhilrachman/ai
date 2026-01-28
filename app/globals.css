@@ -1,26 +1,491 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand palette */
+  --color-primary: #120097;
+  --color-primary-light: #4330b3;
+  --color-primary-dark: #0d0066;
+  --color-primary-contrast: #ffffff;
+
+  --color-secondary: #6b7280;
+  --color-secondary-light: #9ca3af;
+  --color-secondary-dark: #4b5563;
+  --color-secondary-contrast: #ffffff;
+
+  /* Base surfaces */
+  --color-background: #ffffff;
+  --color-background-paper: #ffffff;
+  --color-background-dark: #1a1a1a;
+
+  /* Text palette */
+  --color-text-primary: #030712;
+  --color-text-secondary: #6b7280;
+  --color-text-disabled: #9ca3af;
+  --color-text-dark-primary: #f9fafb;
+  --color-text-dark-secondary: #d1d5db;
+  --color-text-dark-disabled: #6b7280;
+
+  /* Borders */
+  --color-border: #d4d4d4;
+  --color-border-light: #e5e5e5;
+  --color-border-dark: #27272a;
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Actions */
+  --color-action-hover: rgba(0, 0, 0, 0.04);
+  --color-action-selected: rgba(0, 0, 0, 0.08);
+  --color-action-disabled: rgba(0, 0, 0, 0.26);
+  --color-action-disabled-bg: rgba(0, 0, 0, 0.12);
+  --color-action-focus: rgba(0, 0, 0, 0.12);
 }
 
+/* Theme variables using the new color system */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Primary Colors */
+  --color-mainColor: var(--color-primary);
+  --color-mainColorLight: var(--color-primary-light);
+  --color-mainColorDark: var(--color-primary-dark);
+  --color-mainColorContrast: var(--color-primary-contrast);
+
+  /* Secondary Colors */
+  --color-secondary: var(--color-secondary);
+  --color-secondaryLight: var(--color-secondary-light);
+  --color-secondaryDark: var(--color-secondary-dark);
+  --color-secondaryContrast: var(--color-secondary-contrast);
+
+  /* Background Colors */
+  --color-mainBg: var(--color-background);
+  --color-mainBgPaper: var(--color-background-paper);
+  --color-mainBgDark: var(--color-background-dark);
+
+  /* Text Colors */
+  --color-mainText: var(--color-text-primary);
+  --color-mainTextSecondary: var(--color-text-secondary);
+  --color-mainTextDisabled: var(--color-text-disabled);
+  --color-mainTextDark: var(--color-text-dark-primary);
+  --color-mainTextDarkSecondary: var(--color-text-dark-secondary);
+  --color-mainTextDarkDisabled: var(--color-text-dark-disabled);
+
+  /* Border Colors */
+  /* --color-mainBorder: var(--color-border);
+  --color-mainBorderLight: var(--color-border-light);
+  --color-mainBorderDark: var(--color-border-dark); */
+
+  /* Semantic Colors */
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --color-info: var(--color-info);
+
+  /* Action Colors */
+  --color-actionHover: var(--color-action-hover);
+  --color-actionSelected: var(--color-action-selected);
+  --color-actionDisabled: var(--color-action-disabled);
+  --color-actionDisabledBg: var(--color-action-disabled-bg);
+  --color-actionFocus: var(--color-action-focus);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    span:not(.ant-btn span), /* Exclude button spans */
+    form {
+    @apply text-mainText;
+  }
+
+  /* Add button text overrides */
+  .ant-btn {
+    @apply !text-current; /* Use the button's intended text color */
+  }
+
+  .ant-btn-primary {
+    @apply !text-white; /* Force white text on primary buttons */
+  }
+
+  .ant-btn-primary span {
+    @apply !text-white; /* Force white text on spans inside primary buttons */
+  }
+
+  .bg-dynamic {
+    @apply !bg-mainBg border border-neutral-200 dark:!border-neutral-700 shadow-actionHover;
+  }
+
+  .bg-dynamicBase {
+    @apply !bg-mainBgPaper;
+  }
+
+  .dark {
+    /* dark */
+    p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      span:not(.ant-btn span), /* Exclude button spans in dark mode too */
+      form {
+      @apply text-mainTextDark;
+    }
+
+    /* Dark mode button overrides */
+    .ant-btn-primary {
+      @apply !text-white;
+    }
+
+    .ant-btn-primary span {
+      @apply !text-white;
+    }
+
+    .bg-dynamicBase {
+      @apply !bg-mainBgDark;
+    }
+
+    .bg-dynamic {
+      @apply !bg-neutral-800 border-0 shadow-none;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.ant-tabs-tab div.ant-tabs-tab-btn {
+  @apply !text-sm md:!text-base;
+}
+
+.ant-picker-range .ant-picker-input input {
+  @apply !text-sm md:!text-base;
+}
+
+.ant-tabs-tab {
+  @apply text-base !font-medium !text-neutral-400;
+  transition: color 0.3s ease;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #3c82f6; /* Warna aktif (sesuaikan dengan kebutuhan Anda) */
+}
+
+.ant-tabs-tab:hover {
+  @apply !text-neutral-500;
+}
+
+@keyframes bgAnim {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.login-container {
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  animation: bgAnim 40s ease 0s infinite alternate-reverse both;
+}
+
+thead {
+  th {
+    @apply !text-xs md:!text-sm uppercase !text-neutral-500;
+  }
+}
+
+tbody {
+  td {
+    @apply !text-xs md:!text-sm;
+  }
+}
+
+label {
+  @apply !text-xs;
+}
+
+.ant-menu-submenu-title {
+  @apply !text-white;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield !important;
+}
+
+.ant-layout-sider-zero-width-trigger {
+  @apply !hidden;
+}
+
+.ant-pagination {
+  li {
+    @apply !rounded-full !border-none;
+  }
+}
+
+.ant-upload.ant-upload-select {
+  @apply !h-full !w-full;
+}
+
+.react-datepicker {
+  width: 100% !important; /* Pastikan DatePicker sesuai container */
+  font-size: 14px;
+}
+
+.react-datepicker__input-container input {
+  width: 100%; /* Pastikan inputnya sesuai container */
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.react-datepicker-popper {
+  z-index: 1050 !important; /* Pastikan muncul di atas elemen lain */
+}
+
+/* //input overide ant design */
+
+/* Input styles */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select-selector {
+  @apply !bg-mainBgPaper !border-neutral-200 !text-mainText !rounded-lg;
+}
+
+.ant-input-affix-wrapper .ant-input {
+  @apply !bg-transparent !border-none !shadow-none !text-mainText;
+}
+
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-input-number:hover,
+.ant-select:hover .ant-select-selector {
+  @apply !border-mainColor;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-number-focused,
+.ant-select-focused .ant-select-selector {
+  @apply !border-mainColor !shadow-none;
+}
+
+.ant-input::placeholder,
+.ant-input-affix-wrapper input::placeholder,
+.ant-input-number::placeholder,
+.ant-select-selection-placeholder {
+  @apply !text-mainTextSecondary;
+}
+
+.ant-input-disabled,
+.ant-input-affix-wrapper-disabled,
+.ant-input-number-disabled,
+.ant-select-disabled .ant-select-selector {
+  @apply !bg-neutral-100 !text-mainTextDisabled;
+}
+
+/* Prevent browser autofill turning dark */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-background-paper) inset;
+  -webkit-text-fill-color: var(--color-text-primary);
+  caret-color: var(--color-text-primary);
+}
+
+/* Table styles */
+
+.ant-table {
+  @apply !bg-transparent text-mainText;
+}
+
+.ant-table-container {
+  @apply !bg-transparent;
+}
+
+.ant-table-content {
+  @apply !bg-transparent;
+}
+
+/* Header styles */
+.ant-table-thead > tr > th {
+  @apply !bg-neutral-50
+         !text-neutral-600
+         !font-medium !text-xs md:!text-sm !uppercase 
+         !border-neutral-200 whitespace-nowrap;
+}
+
+/* Body styles */
+.ant-table-tbody > tr > td {
+  @apply !bg-white
+         !text-mainText
+         !text-xs md:!text-sm 
+         !border-neutral-200;
+}
+
+/* Hover state */
+.ant-table-tbody > tr:hover > td {
+  @apply !bg-neutral-50;
+}
+
+/* Selected row */
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  @apply !bg-mainColor/10;
+}
+
+.ant-table-tbody > tr.ant-table-row-selected:hover > td {
+  @apply !bg-mainColor/20;
+}
+
+/* Link button in table */
+.ant-table .ant-btn-link {
+  @apply !text-mainColor;
+}
+
+/* Tag styles in table */
+/*
+.ant-table .ant-tag {
+  @apply !text-mainTextDark;
+}
+*/
+
+/* Pagination styles */
+.ant-pagination {
+  @apply !mt-4;
+  .ant-select-selector {
+    @apply !h-[40px];
+  }
+}
+
+.ant-pagination-item {
+  @apply !bg-transparent
+         !border-neutral-200;
+}
+
+.ant-pagination-item a {
+  @apply !text-mainText;
+}
+
+.ant-pagination-item-active {
+  @apply !border-mainColor;
+}
+
+.ant-pagination-item-active a {
+  @apply !text-mainColor;
+}
+
+.ant-pagination-item:hover {
+  @apply !border-mainColor;
+}
+
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  @apply !bg-transparent
+         !border-neutral-200
+         !text-mainText;
+}
+
+.ant-pagination-prev:hover .ant-pagination-item-link,
+.ant-pagination-next:hover .ant-pagination-item-link {
+  @apply !border-mainColor
+         !text-mainColor;
+}
+
+.ant-pagination-disabled .ant-pagination-item-link {
+  @apply !text-neutral-400;
+}
+
+/* Menu chevron/arrow icon styles */
+.ant-menu-submenu-arrow {
+  color: #374151 !important; /* Dark gray for light mode */
+}
+
+.dark .ant-menu-submenu-arrow {
+  color: #f3f4f6 !important; /* Light gray for dark mode */
+}
+
+.ant-menu-submenu-arrow::before,
+.ant-menu-submenu-arrow::after {
+  background-color: #374151 !important; /* Dark gray for light mode */
+}
+
+.dark .ant-menu-submenu-arrow::before,
+.dark .ant-menu-submenu-arrow::after {
+  background-color: #f3f4f6 !important; /* Light gray for dark mode */
+}
+
+.ant-menu-submenu:hover .ant-menu-submenu-arrow {
+  color: #3b82f6 !important; /* Blue on hover */
+}
+
+.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow {
+  color: #60a5fa !important; /* Light blue on hover in dark mode */
+}
+
+.ant-menu-submenu:hover .ant-menu-submenu-arrow::before,
+.ant-menu-submenu:hover .ant-menu-submenu-arrow::after {
+  background-color: #3b82f6 !important; /* Blue on hover */
+}
+
+.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow::before,
+.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow::after {
+  background-color: #60a5fa !important; /* Light blue on hover in dark mode */
+}
+
+/* Alternative approach for chevron icon */
+.ant-menu-submenu .ant-menu-submenu-expand-icon {
+  color: #374151 !important; /* Dark gray for light mode */
+}
+
+.dark .ant-menu-submenu .ant-menu-submenu-expand-icon {
+  color: #f3f4f6 !important; /* Light gray for dark mode */
+}
+
+.ant-menu-submenu:hover .ant-menu-submenu-expand-icon {
+  color: #3b82f6 !important; /* Blue on hover */
+}
+
+.dark .ant-menu-submenu:hover .ant-menu-submenu-expand-icon {
+  color: #60a5fa !important; /* Light blue on hover in dark mode */
+}
+
+/* Ensure all menu icons are visible */
+.ant-menu .anticon {
+  color: #374151 !important; /* Dark gray for light mode */
+}
+
+.dark .ant-menu .anticon {
+  color: #f3f4f6 !important; /* Light gray for dark mode */
+}
+
+.ant-menu-item:hover .anticon,
+.ant-menu-submenu:hover .anticon {
+  color: #3b82f6 !important; /* Blue on hover */
+}
+
+.dark .ant-menu-item:hover .anticon,
+.dark .ant-menu-submenu:hover .anticon {
+  color: #60a5fa !important; /* Light blue on hover in dark mode */
+}
+
+/* Sembunyikan panel kalender kedua */
+.dateRangePicker .ant-picker-panels > .ant-picker-panel:last-child {
+  display: none !important;
+}
+.dateRangePicker .ant-picker-panels {
+  justify-content: center;
 }

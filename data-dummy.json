@@ -1,0 +1,31 @@
+{
+  "DATA_MACHINE": [
+    {
+      "key": "1",
+      "machineId": "MC-001",
+      "name": "Ayakan Utama A",
+      "status": "RUNNING",
+      "location": "Site A",
+      "totalStone": 1240,
+      "lastActive": "2026-01-22 08:55"
+    },
+    {
+      "key": "2",
+      "machineId": "MC-002",
+      "name": "Ayakan Sekunder B",
+      "status": "IDLE",
+      "location": "Site B",
+      "totalStone": 875,
+      "lastActive": "2026-01-22 07:40"
+    },
+    {
+      "key": "3",
+      "machineId": "MC-003",
+      "name": "Ayakan Cadangan",
+      "status": "ERROR",
+      "location": "Site A",
+      "totalStone": 342,
+      "lastActive": "2026-01-21 23:10"
+    }
+  ]
+}
