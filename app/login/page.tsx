@@ -61,7 +61,7 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#343541] p-4">
       <Card
-        className="w-full max-w-md border-[#565869]  shadow-xl"
+        className="w-full max-w-md border-[#565869] bg-[#202123] shadow-xl"
         bordered={false}
       >
         <div className="mb-8 text-center">
