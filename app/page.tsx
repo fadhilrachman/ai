@@ -1,65 +1,244 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import {
+  Sidebar,
+  ChatContainer,
+  Message,
+  DocumentReferenceModal,
+  ChartConfig,
+} from "@/components/chat";
+import { Button, message as antMessage } from "antd";
+import { FileTextOutlined } from "@ant-design/icons";
+import { documentReferences } from "@/lib/dummy";
+import { useRouter } from "next/navigation";
+import chatApi from "@/lib/chatApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
+
+// Helper to group history by conversation_id
+const processHistory = (historyItems: any[]) => {
+  const conversationsMap = new Map();
+  
+  historyItems.forEach((item) => {
+    if (!item.conversation_id) return;
+    
+    if (!conversationsMap.has(item.conversation_id)) {
+      conversationsMap.set(item.conversation_id, {
+        id: item.conversation_id,
+        title: item.user_message.slice(0, 30) + (item.user_message.length > 30 ? "..." : ""),
+        date: new Date(item.created_at).toISOString().split("T")[0],
+        timestamp: new Date(item.created_at).getTime(),
+      });
+    }
+  });
+
+  return Array.from(conversationsMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+};
 
 export default function Home() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [modal, setModal] = useState({
+    documentReferences: false,
+  });
+
+  // Auth Check
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
+
+  // Fetch History
+  const { data: historyData } = useQuery({
+    queryKey: ["chatHistory"],
+    queryFn: async () => {
+      try {
+        const response = await chatApi.get("/chat/history");
+        return response.data;
+      } catch (error: any) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem("access_token");
+          router.push("/login");
+        }
+        throw error;
+      }
+    },
+    // Refetch less often to save bandwidth, or rely on invalidation
+    staleTime: 1000 * 60 * 5, 
+  });
+
+  const chatHistoryList = useMemo(() => {
+    if (!historyData?.history) return [];
+    return processHistory(historyData.history);
+  }, [historyData]);
+
+  // Auto-select latest chat if none selected
+  useEffect(() => {
+    if (!activeChatId && chatHistoryList.length > 0) {
+      setActiveChatId(chatHistoryList[0].id);
+    }
+  }, [chatHistoryList, activeChatId]);
+
+  // Transform history items into Messages when activeChatId changes
+  useEffect(() => {
+    if (activeChatId && historyData?.history) {
+      const filtered = historyData.history
+        .filter((item: any) => item.conversation_id === activeChatId)
+        .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      const mappedMessages: Message[] = [];
+      filtered.forEach((item: any) => {
+        // User message
+        mappedMessages.push({
+          id: `user-${item.id}`,
+          role: "user",
+          content: item.user_message,
+          timestamp: new Date(item.created_at),
+        });
+        // AI response
+        mappedMessages.push({
+          id: `ai-${item.id}`,
+          role: "assistant",
+          content: item.response_text,
+          timestamp: new Date(item.created_at), // Using same timestamp for simplicity or add offset
+          chartConfig: item.response_chart_json || undefined,
+        });
+      });
+      setMessages(mappedMessages);
+    } else if (!activeChatId) {
+      setMessages([]);
+    }
+  }, [activeChatId, historyData]);
+
+  // Send Mutation
+  const sendMutation = useMutation({
+    mutationFn: async (payload: { message: string; conversation_id?: string }) => {
+      const response = await chatApi.post("/chat/", payload);
+      return response.data; // { text, chart }
+    },
+    onSuccess: (data, variables) => {
+      // Create assistant message
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: data.text,
+        timestamp: new Date(),
+        chartConfig: data.chart || undefined,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      // Invalidate history query to update sidebar if needed
+      queryClient.invalidateQueries({ queryKey: ["chatHistory"] });
+    },
+    onError: (error: any) => {
+      antMessage.error("Failed to send message. Please try again.");
+      console.error(error);
+    },
+  });
+
+  const handleSend = useCallback(async () => {
+    if (!inputValue.trim() || sendMutation.isPending) return;
+
+    // Use current activeChatId or generate a new one if it's the first message
+    // Actually API expects conversation_id to link messages. 
+    // If null, API might start new? The swagger says optional.
+    // We should maintain one conversation_id for the session if activeChatId is set.
+    // If NO activeChatId, we can generate one CLIENT side or let backend handle it.
+    // Let's generate one if null so we can group them in UI immediately?
+    // Or simpler: just send conversation_id if activeChatId exists.
+    
+    let currentConversationId = activeChatId;
+    if (!currentConversationId) {
+       currentConversationId = `conv-${Date.now()}`;
+       setActiveChatId(currentConversationId);
+    }
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: inputValue.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+
+    sendMutation.mutate({
+      message: userMessage.content,
+      conversation_id: currentConversationId,
+    });
+  }, [inputValue, sendMutation, activeChatId]);
+
+  const handleNewChat = useCallback(() => {
+    setActiveChatId(null);
+    setMessages([]);
+    setInputValue("");
+  }, []);
+
+  const handleSelectChat = useCallback((id: string) => {
+    setActiveChatId(id);
+  }, []);
+
+  const handleSuggestedPrompt = useCallback((prompt: string) => {
+    setInputValue(prompt);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex relative h-screen bg-[#343541] overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        chatHistory={chatHistoryList}
+        activeChatId={activeChatId}
+        onNewChat={handleNewChat}
+        onSelectChat={handleSelectChat}
+      />
+
+      {/* Main Chat Area */}
+      <div className="flex-1 relative">
+        <ChatContainer
+          messages={messages}
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onSend={handleSend}
+          isLoading={sendMutation.isPending}
+          onSuggestedPrompt={handleSuggestedPrompt}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </div>
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          onClick={() => {
+            setModal((p) => ({ ...p, documentReferences: true }));
+          }}
+          type="default"
+          size="large"
+          icon={<FileTextOutlined className="text-lg" />}
+        >
+          <span 
+          // className="max-w-0 group-hover:max-w-xs transition-all duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap ml-0 group-hover:ml-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            
+            Document References
+          </span>
+        </Button>
+      </div>
+
+      <DocumentReferenceModal
+        documents={documentReferences}
+        open={modal.documentReferences}
+        onClose={() => {
+          setModal((p) => ({ ...p, documentReferences: false }));
+        }}
+      />
     </div>
   );
 }

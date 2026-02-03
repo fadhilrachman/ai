@@ -1,39 +1,39 @@
 export default {
-  // Primary Colors
+  // Primary Colors - AI Green Accent
   primary: {
-    main: "#120097", // Your main brand color
-    light: "#4330B3", // Lighter shade for hover states
-    dark: "#0D0066", // Darker shade for active states
+    main: "#10A37F", // AI green
+    light: "#1ABC9C", // Lighter shade for hover states
+    dark: "#0D8A6A", // Darker shade for active states
     contrast: "#FFFFFF", // Text color on primary background
   },
 
   // Secondary Colors
   secondary: {
-    main: "#6B7280", // Supporting color
-    light: "#9CA3AF", // Lighter shade
-    dark: "#4B5563", // Darker shade
+    main: "#8E8EA0", // Muted gray
+    light: "#ACACBE", // Lighter shade
+    dark: "#6E6E80", // Darker shade
     contrast: "#FFFFFF", // Text color on secondary background
   },
 
-  // Neutral Colors
+  // Neutral Colors - AI Dark Theme
   neutral: {
-    50: "#FAFAFA", // Lightest background
-    100: "#F5F5F5", // Light background
-    200: "#E5E5E5", // Border light
-    300: "#D4D4D4", // Border
-    400: "#A3A3A3", // Disabled text
-    500: "#737373", // Secondary text
-    600: "#525252", // Primary text
-    700: "#404040", // Heading text
-    800: "#262626", // Dark background
-    900: "#171717", // Darkest background
+    50: "#F7F7F8", // Lightest (for light mode)
+    100: "#ECECF1", // Light
+    200: "#D9D9E3", // Border light
+    300: "#C5C5D2", // Border
+    400: "#8E8EA0", // Disabled text
+    500: "#6E6E80", // Secondary text
+    600: "#565869", // Primary text light
+    700: "#40414F", // Chat bubble background
+    800: "#343541", // Main background
+    900: "#202123", // Sidebar background
   },
 
   // Semantic Colors
   success: {
-    main: "#22C55E", // Success states
-    light: "#86EFAC",
-    dark: "#15803D",
+    main: "#10A37F", // Using AI green
+    light: "#1ABC9C",
+    dark: "#0D8A6A",
     contrast: "#FFFFFF",
   },
   warning: {
@@ -55,39 +55,39 @@ export default {
     contrast: "#FFFFFF",
   },
 
-  // Background Colors
+  // Background Colors - AI Dark Theme
   background: {
-    default: "#ffffff", // Light mode background
-    paper: "#FFFFFF", // Card/Paper background
-    dark: "#1A1A1A", // Dark mode background
+    default: "#343541", // Main chat area
+    paper: "#40414F", // Cards/Elevated surfaces
+    dark: "#202123", // Sidebar/Darkest areas
   },
 
   // Text Colors
   text: {
-    primary: "#030712", // Primary text
-    secondary: "#6B7280", // Secondary text
-    disabled: "#9CA3AF", // Disabled text
+    primary: "#ECECF1", // Primary text (light)
+    secondary: "#8E8EA0", // Secondary text (muted)
+    disabled: "#6E6E80", // Disabled text
     dark: {
-      primary: "#F9FAFB", // Dark mode primary text
-      secondary: "#D1D5DB", // Dark mode secondary text
-      disabled: "#6B7280", // Dark mode disabled text
+      primary: "#ECECF1", // Dark mode primary text
+      secondary: "#8E8EA0", // Dark mode secondary text
+      disabled: "#6E6E80", // Dark mode disabled text
     },
   },
 
   // Border Colors
   border: {
-    light: "#E5E5E5", // Light borders
-    main: "#D4D4D4", // Default borders
-    dark: "#27272A", // Dark mode borders
+    light: "#4E4F60", // Light borders (dark mode)
+    main: "#565869", // Default borders
+    dark: "#2D2D3A", // Dark mode borders
   },
 
   // Action Colors
   action: {
-    hover: "rgba(0, 0, 0, 0.04)", // Hover state
-    selected: "rgba(0, 0, 0, 0.08)", // Selected state
-    disabled: "rgba(0, 0, 0, 0.26)", // Disabled state
-    disabledBackground: "rgba(0, 0, 0, 0.12)", // Disabled background
-    focus: "rgba(0, 0, 0, 0.12)", // Focus state
+    hover: "rgba(255, 255, 255, 0.08)", // Hover state
+    selected: "rgba(255, 255, 255, 0.12)", // Selected state
+    disabled: "rgba(255, 255, 255, 0.26)", // Disabled state
+    disabledBackground: "rgba(255, 255, 255, 0.12)", // Disabled background
+    focus: "rgba(255, 255, 255, 0.12)", // Focus state
     dark: {
       hover: "rgba(255, 255, 255, 0.08)",
       selected: "rgba(255, 255, 255, 0.16)",

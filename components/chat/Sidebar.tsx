@@ -1,0 +1,153 @@
+"use client";
+
+import React from "react";
+import { Button, Tooltip } from "antd";
+import { 
+  PlusOutlined, 
+  MessageOutlined,
+  SettingOutlined,
+  UserOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
+} from "@ant-design/icons";
+
+interface ChatHistory {
+  id: string;
+  title: string;
+  date: string;
+}
+
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+  chatHistory: ChatHistory[];
+  activeChatId: string | null;
+  onNewChat: () => void;
+  onSelectChat: (id: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({
+  isCollapsed,
+  onToggle,
+  chatHistory,
+  activeChatId,
+  onNewChat,
+  onSelectChat,
+}) => {
+  return (
+    <div
+      className={`
+        flex flex-col h-screen bg-[#171717] border-r border-[#2D2D3A]
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? "w-0 md:w-16" : "w-64"}
+        ${isCollapsed ? "overflow-hidden md:overflow-visible" : ""}
+      `}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 border-b border-[#2D2D3A]">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#10A37F] flex items-center justify-center">
+              <span className="text-white font-bold text-sm">AI</span>
+            </div>
+            <span className="text-white font-medium">AI</span>
+          </div>
+        )}
+        <Button
+          type="text"
+          icon={isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={onToggle}
+          className="!text-[#8E8EA0] hover:!text-white hover:!bg-[#2D2D3A]"
+        />
+      </div>
+
+      {/* New Chat Button */}
+      <div className={`p-3 ${isCollapsed ? "hidden md:block" : ""}`}>
+        <Tooltip title={isCollapsed ? "New Chat" : ""} placement="right">
+          <Button
+            type="default"
+            icon={<PlusOutlined />}
+            onClick={onNewChat}
+            className={`
+              w-full !bg-transparent !border-[#4E4F60] !text-white
+              hover:!bg-[#2D2D3A] hover:!border-[#565869]
+              flex items-center ${isCollapsed ? "justify-center" : "justify-start"} gap-2
+              !h-10 !rounded-lg
+            `}
+          >
+            {!isCollapsed && "New Chat"}
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* Chat History */}
+      <div className={`flex-1 overflow-y-auto px-2 ${isCollapsed ? "hidden md:block" : ""}`}>
+        {!isCollapsed && chatHistory.length > 0 && (
+          <div className="mb-2 px-2 text-xs text-[#8E8EA0] uppercase tracking-wider">
+            Recent
+          </div>
+        )}
+        <div className="space-y-1">
+          {chatHistory.map((chat) => (
+            <Tooltip 
+              key={chat.id} 
+              title={isCollapsed ? chat.title : ""} 
+              placement="right"
+            >
+              <div
+                onClick={() => onSelectChat(chat.id)}
+                className={`
+                  flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                  transition-all duration-200
+                  ${activeChatId === chat.id 
+                    ? "bg-[#2D2D3A] text-white" 
+                    : "text-[#ACACBE] hover:bg-[#2D2D3A] hover:text-white"
+                  }
+                `}
+              >
+                <MessageOutlined className="text-sm flex-shrink-0" />
+                {!isCollapsed && (
+                  <span className="truncate text-sm">{chat.title}</span>
+                )}
+              </div>
+            </Tooltip>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className={`p-3 border-t border-[#2D2D3A] ${isCollapsed ? "hidden md:block" : ""}`}>
+        <div className="space-y-1">
+          <Tooltip title={isCollapsed ? "Settings" : ""} placement="right">
+            <div
+              className={`
+                flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                text-[#ACACBE] hover:bg-[#2D2D3A] hover:text-white
+                transition-all duration-200
+              `}
+            >
+              <SettingOutlined className="text-sm flex-shrink-0" />
+              {!isCollapsed && <span className="text-sm">Settings</span>}
+            </div>
+          </Tooltip>
+          <Tooltip title={isCollapsed ? "Profile" : ""} placement="right">
+            <div
+              className={`
+                flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                text-[#ACACBE] hover:bg-[#2D2D3A] hover:text-white
+                transition-all duration-200
+              `}
+            >
+              <div className="w-6 h-6 rounded-full bg-[#10A37F] flex items-center justify-center flex-shrink-0">
+                <UserOutlined className="text-xs text-white" />
+              </div>
+              {!isCollapsed && <span className="text-sm">User</span>}
+            </div>
+          </Tooltip>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
-// import type Entity from '@ant-design/cssinjs/es/Cache';
 import { useServerInsertedHTML } from "next/navigation";
 import { ConfigProvider, theme as antdTheme } from "antd";
 import colors from "./color";
@@ -12,7 +11,7 @@ const StyledComponentsRegistry = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const mode: string = "light";
+  const mode: string = "dark"; // AI dark mode
   const cache = React.useMemo(() => createCache(), []);
   useServerInsertedHTML(() => (
     <style
@@ -24,271 +23,112 @@ const StyledComponentsRegistry = ({
     <StyleProvider cache={cache}>
       <ConfigProvider
         theme={{
-          algorithm:
-            mode === "dark"
-              ? antdTheme.darkAlgorithm
-              : antdTheme.defaultAlgorithm,
+          algorithm: antdTheme.darkAlgorithm,
           token: {
-            // Primary Colors
+            // Primary Colors - AI Green
             colorPrimary: colors.primary.main,
             colorPrimaryHover: colors.primary.light,
             colorPrimaryActive: colors.primary.dark,
-            colorPrimaryBg: colors.primary.main + "10",
-            colorPrimaryBgHover: colors.primary.main + "20",
+            colorPrimaryBg: colors.primary.main + "15",
+            colorPrimaryBgHover: colors.primary.main + "25",
             colorPrimaryBorder: colors.primary.main,
             colorPrimaryBorderHover: colors.primary.light,
             borderRadius: 12,
             borderRadiusLG: 16,
-            borderRadiusSM: 10,
+            borderRadiusSM: 8,
 
             // Text Colors
-            colorText:
-              mode === "dark" ? colors.text.dark.primary : colors.text.primary,
-            colorTextSecondary:
-              mode === "dark"
-                ? colors.text.dark.secondary
-                : colors.text.secondary,
-            colorTextDisabled:
-              mode === "dark"
-                ? colors.text.dark.disabled
-                : colors.text.disabled,
+            colorText: colors.text.primary,
+            colorTextSecondary: colors.text.secondary,
+            colorTextDisabled: colors.text.disabled,
 
             // Background Colors
-            colorBgBase:
-              mode === "dark"
-                ? colors.background.dark
-                : colors.background.default,
-            colorBgContainer:
-              mode === "dark"
-                ? colors.background.paper
-                : colors.background.paper,
-            colorBgElevated:
-              mode === "dark" ? colors.neutral[800] : colors.neutral[50],
-            colorBgLayout:
-              mode === "dark"
-                ? colors.background.dark
-                : colors.background.default,
+            colorBgBase: colors.background.dark,
+            colorBgContainer: colors.background.default,
+            colorBgElevated: colors.neutral[700],
+            colorBgLayout: colors.background.dark,
 
             // Border Colors
-            colorBorder:
-              mode === "dark" ? colors.border.dark : colors.border.main,
-            colorBorderSecondary:
-              mode === "dark" ? colors.border.dark : colors.border.light,
-
-            // Action Colors
-            //   colorAction: colors.action.hover,
-            //   colorActionHover: colors.action.selected,
-            //   colorActionActive: colors.action.focus,
-            //   colorActionDisabled: colors.action.disabled,
-            //   colorActionDisabledBg: colors.action.disabledBackground,
+            colorBorder: colors.border.main,
+            colorBorderSecondary: colors.border.light,
           },
           components: {
             Button: {
               fontSizeLG: 14,
               paddingBlockLG: 1,
-
-              // Primary Button Colors - Make sure text is always white/contrast
               colorPrimaryBg: colors.primary.main,
               colorPrimaryBgHover: colors.primary.light,
               colorPrimaryBorder: colors.primary.main,
               colorPrimaryBorderHover: colors.primary.light,
               colorPrimaryHover: colors.primary.light,
               colorPrimaryActive: colors.primary.dark,
-              colorPrimaryText: colors.primary.contrast, // White text on primary
-              colorPrimaryTextHover: colors.primary.contrast, // Keep white on hover
-              colorPrimaryTextActive: colors.primary.contrast, // Keep white on active
-
-              // Default Button Colors (for non-primary buttons)
-              colorText:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              colorTextSecondary:
-                mode === "dark"
-                  ? colors.text.dark.secondary
-                  : colors.text.secondary,
-              colorTextDisabled:
-                mode === "dark"
-                  ? colors.text.dark.disabled
-                  : colors.text.disabled,
-
-              // Default Button Background
-              colorBgContainer:
-                mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              colorBorder:
-                mode === "dark" ? colors.border.dark : colors.border.main,
-              colorBgContainerDisabled:
-                mode === "dark" ? colors.neutral[900] : colors.neutral[100],
-
-              // Ghost Button Colors
-              colorBgTextHover:
-                mode === "dark"
-                  ? colors.action.dark.hover
-                  : colors.action.hover,
-              colorBgTextActive:
-                mode === "dark"
-                  ? colors.action.dark.selected
-                  : colors.action.selected,
+              colorPrimaryText: colors.primary.contrast,
+              colorPrimaryTextHover: colors.primary.contrast,
+              colorPrimaryTextActive: colors.primary.contrast,
+              colorText: colors.text.primary,
+              colorTextSecondary: colors.text.secondary,
+              colorTextDisabled: colors.text.disabled,
+              colorBgContainer: colors.neutral[700],
+              colorBorder: colors.border.main,
+              colorBgContainerDisabled: colors.neutral[800],
+              colorBgTextHover: colors.action.hover,
+              colorBgTextActive: colors.action.selected,
             },
-            DatePicker: {
-              // inputFontSize: 12,
-              // colorBgContainer:
-              //   mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              // colorText:
-              //   mode === "dark" ? colors.text.dark.primary : colors.text.primary,
-              // colorTextPlaceholder:
-              //   mode === "dark"
-              //     ? colors.text.dark.secondary
-              //     : colors.text.secondary,
-              // colorBorder:
-              //   mode === "dark" ? colors.border.dark : colors.border.main,
-              // colorBgElevated:
-              //   mode === "dark" ? colors.neutral[900] : colors.background.paper,
-              // colorIcon:
-              //   mode === "dark" ? colors.text.dark.primary : colors.text.primary,
-              // colorIconHover:
-              //   mode === "dark" ? colors.primary.light : colors.primary.main,
-              // colorPrimary: colors.primary.main,
-              // colorPrimaryHover: colors.primary.light,
-              // colorPrimaryActive: colors.primary.dark,
-              // colorTextDisabled:
-              //   mode === "dark"
-              //     ? colors.text.dark.disabled
-              //     : colors.text.disabled,
-              // colorBgContainerDisabled:
-              //   mode === "dark" ? colors.neutral[900] : colors.neutral[100],
-            },
-            Form: {
-              verticalLabelPadding: "0 0 2px",
-            },
-            Tabs: {
-              titleFontSize: 16,
-              itemSelectedColor: colors.primary.main,
-              itemHoverColor: colors.primary.light,
-              itemActiveColor: colors.primary.dark,
+            Input: {
+              colorBgContainer: colors.neutral[700],
+              colorBorder: colors.border.main,
+              colorText: colors.text.primary,
+              colorTextPlaceholder: colors.text.secondary,
+              borderRadius: 12,
+              paddingBlock: 12,
+              paddingInline: 16,
+              fontSize: 14,
+              colorBgContainerDisabled: colors.neutral[800],
+              colorTextDisabled: colors.text.disabled,
             },
             Menu: {
-              itemSelectedBg:
-                mode === "dark"
-                  ? colors.primary.main + "80"
-                  : colors.primary.main + "20",
-              itemHoverColor:
-                mode === "dark" ? colors.primary.light : colors.primary.main,
-              itemColor:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              itemSelectedColor:
-                mode === "dark" ? colors.primary.light : colors.primary.main,
-              fontSize: 13,
-              iconSize: 14,
-              colorIcon:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              colorIconHover:
-                mode === "dark" ? colors.primary.light : colors.primary.main,
-              subMenuItemBg:
-                mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              groupTitleColor:
-                mode === "dark"
-                  ? colors.text.dark.secondary
-                  : colors.text.secondary,
+              itemSelectedBg: colors.primary.main + "20",
+              itemHoverColor: colors.primary.light,
+              itemColor: colors.text.primary,
+              itemSelectedColor: colors.primary.main,
+              fontSize: 14,
+              iconSize: 16,
+              colorIcon: colors.text.primary,
+              colorIconHover: colors.primary.main,
+              subMenuItemBg: colors.neutral[900],
+              groupTitleColor: colors.text.secondary,
               activeBarBorderWidth: 0,
               activeBarHeight: 0,
               activeBarWidth: 0,
+              itemBg: "transparent",
+              darkItemBg: "transparent",
             },
-            Pagination: {
-              itemActiveBg: colors.primary.main + "10",
-              itemSize: 40,
-              itemActiveColorDisabled: colors.text.disabled,
+            Modal: {
+              contentBg: colors.neutral[800],
+              headerBg: colors.neutral[800],
+              titleColor: colors.text.primary,
             },
-            Input: {
-              colorBgContainer:
-                mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              colorBorder:
-                mode === "dark" ? colors.border.dark : colors.border.main,
-              colorText:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              colorTextPlaceholder:
-                mode === "dark"
-                  ? colors.text.dark.secondary
-                  : colors.text.secondary,
-              borderRadius: 8,
-              paddingBlock: 8,
-              paddingInline: 12,
-              fontSize: 14,
-              colorBgContainerDisabled:
-                mode === "dark" ? colors.neutral[900] : colors.neutral[100],
-              colorTextDisabled:
-                mode === "dark"
-                  ? colors.text.dark.disabled
-                  : colors.text.disabled,
+            Tooltip: {
+              colorBgSpotlight: colors.neutral[700],
+              colorTextLightSolid: colors.text.primary,
             },
-            InputNumber: {
-              colorBgContainer:
-                mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              colorBorder:
-                mode === "dark" ? colors.border.dark : colors.border.main,
-              colorText:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              colorTextPlaceholder:
-                mode === "dark"
-                  ? colors.text.dark.secondary
-                  : colors.text.secondary,
-              borderRadius: 8,
-              paddingBlock: 8,
-              paddingInline: 12,
-              fontSize: 14,
-              colorBgContainerDisabled:
-                mode === "dark" ? colors.neutral[900] : colors.neutral[100],
-              colorTextDisabled:
-                mode === "dark"
-                  ? colors.text.dark.disabled
-                  : colors.text.disabled,
+            Dropdown: {
+              colorBgElevated: colors.neutral[700],
+              controlItemBgHover: colors.action.hover,
             },
             Select: {
-              colorBgContainer:
-                mode === "dark" ? colors.neutral[800] : colors.background.paper,
-              colorBorder:
-                mode === "dark" ? colors.border.dark : colors.border.main,
-              colorText:
-                mode === "dark"
-                  ? colors.text.dark.primary
-                  : colors.text.primary,
-              colorTextPlaceholder:
-                mode === "dark"
-                  ? colors.text.dark.secondary
-                  : colors.text.secondary,
-
+              colorBgContainer: colors.neutral[700],
+              colorBorder: colors.border.main,
+              colorText: colors.text.primary,
+              colorTextPlaceholder: colors.text.secondary,
               fontSize: 14,
-              // paddingBlock: 8,
-              // paddingInline: 12,
-              // height: 40,
-              // lineHeight: 40,
-              borderRadius: 8,
-              colorBgContainerDisabled:
-                mode === "dark" ? colors.neutral[900] : colors.neutral[100],
-              colorTextDisabled:
-                mode === "dark"
-                  ? colors.text.dark.disabled
-                  : colors.text.disabled,
-              colorBgElevated:
-                mode === "dark" ? colors.neutral[900] : colors.background.paper,
-              optionSelectedBg:
-                mode === "dark"
-                  ? colors.primary.main + "40"
-                  : colors.primary.main + "10",
-              optionActiveBg:
-                mode === "dark"
-                  ? colors.primary.main + "80"
-                  : colors.primary.main + "20",
+              borderRadius: 12,
+              colorBgContainerDisabled: colors.neutral[800],
+              colorTextDisabled: colors.text.disabled,
+              colorBgElevated: colors.neutral[700],
+              optionSelectedBg: colors.primary.main + "30",
+              optionActiveBg: colors.primary.main + "20",
             },
-            // Add more component customizations as needed
           },
         }}
       >

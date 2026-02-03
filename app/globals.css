@@ -1,88 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  /* Brand palette */
-  --color-primary: #120097;
-  --color-primary-light: #4330b3;
-  --color-primary-dark: #0d0066;
+  /* AI Dark Theme Colors */
+  --color-primary: #9e10a3;
+  --color-primary-light: #1abc9c;
+  --color-primary-dark: #0d8a6a;
   --color-primary-contrast: #ffffff;
 
-  --color-secondary: #6b7280;
-  --color-secondary-light: #9ca3af;
-  --color-secondary-dark: #4b5563;
+  --color-secondary: #8e8ea0;
+  --color-secondary-light: #acacbe;
+  --color-secondary-dark: #6e6e80;
   --color-secondary-contrast: #ffffff;
 
-  /* Base surfaces */
-  --color-background: #ffffff;
-  --color-background-paper: #ffffff;
-  --color-background-dark: #1a1a1a;
+  /* AI Dark Surfaces */
+  --color-background: #101a88;
+  --color-background-paper: #40414f;
+  --color-background-dark: #202123;
 
-  /* Text palette */
-  --color-text-primary: #030712;
-  --color-text-secondary: #6b7280;
-  --color-text-disabled: #9ca3af;
-  --color-text-dark-primary: #f9fafb;
-  --color-text-dark-secondary: #d1d5db;
-  --color-text-dark-disabled: #6b7280;
+  /* Text Colors */
+  --color-text-primary: #ececf1;
+  --color-text-secondary: #8e8ea0;
+  --color-text-disabled: #6e6e80;
 
   /* Borders */
-  --color-border: #d4d4d4;
-  --color-border-light: #e5e5e5;
-  --color-border-dark: #27272a;
+  --color-border: #565869;
+  --color-border-light: #4e4f60;
+  --color-border-dark: #2d2d3a;
 
   /* Semantic */
-  --color-success: #22c55e;
+  --color-success: #10a37f;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
   /* Actions */
-  --color-action-hover: rgba(0, 0, 0, 0.04);
-  --color-action-selected: rgba(0, 0, 0, 0.08);
-  --color-action-disabled: rgba(0, 0, 0, 0.26);
-  --color-action-disabled-bg: rgba(0, 0, 0, 0.12);
-  --color-action-focus: rgba(0, 0, 0, 0.12);
+  --color-action-hover: rgba(255, 255, 255, 0.08);
+  --color-action-selected: rgba(255, 255, 255, 0.12);
+  --color-action-disabled: rgba(255, 255, 255, 0.26);
+  --color-action-disabled-bg: rgba(255, 255, 255, 0.12);
+  --color-action-focus: rgba(255, 255, 255, 0.12);
 }
 
-/* Theme variables using the new color system */
+/* Theme variables */
 @theme inline {
-  /* Primary Colors */
   --color-mainColor: var(--color-primary);
   --color-mainColorLight: var(--color-primary-light);
   --color-mainColorDark: var(--color-primary-dark);
   --color-mainColorContrast: var(--color-primary-contrast);
 
-  /* Secondary Colors */
   --color-secondary: var(--color-secondary);
   --color-secondaryLight: var(--color-secondary-light);
   --color-secondaryDark: var(--color-secondary-dark);
   --color-secondaryContrast: var(--color-secondary-contrast);
 
-  /* Background Colors */
   --color-mainBg: var(--color-background);
   --color-mainBgPaper: var(--color-background-paper);
   --color-mainBgDark: var(--color-background-dark);
 
-  /* Text Colors */
   --color-mainText: var(--color-text-primary);
   --color-mainTextSecondary: var(--color-text-secondary);
   --color-mainTextDisabled: var(--color-text-disabled);
-  --color-mainTextDark: var(--color-text-dark-primary);
-  --color-mainTextDarkSecondary: var(--color-text-dark-secondary);
-  --color-mainTextDarkDisabled: var(--color-text-dark-disabled);
 
-  /* Border Colors */
-  /* --color-mainBorder: var(--color-border);
-  --color-mainBorderLight: var(--color-border-light);
-  --color-mainBorderDark: var(--color-border-dark); */
-
-  /* Semantic Colors */
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-error: var(--color-error);
   --color-info: var(--color-info);
 
-  /* Action Colors */
   --color-actionHover: var(--color-action-hover);
   --color-actionSelected: var(--color-action-selected);
   --color-actionDisabled: var(--color-action-disabled);
@@ -90,402 +73,287 @@
   --color-actionFocus: var(--color-action-focus);
 }
 
+/* Base styles for dark mode */
+html,
+body {
+  @apply bg-[#343541] text-[#ECECF1];
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #565869;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6e6e80;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #565869 transparent;
+}
+
+/* Text styling */
 @layer base {
   p,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    span:not(.ant-btn span), /* Exclude button spans */
-    form {
-    @apply text-mainText;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  span:not(.ant-btn span),
+  form {
+    @apply text-[#ECECF1];
   }
 
-  /* Add button text overrides */
-  .ant-btn {
-    @apply !text-current; /* Use the button's intended text color */
+  /* Links */
+  a {
+    @apply text-[#10A37F] hover:text-[#1ABC9C] transition-colors;
   }
 
-  .ant-btn-primary {
-    @apply !text-white; /* Force white text on primary buttons */
-  }
-
-  .ant-btn-primary span {
-    @apply !text-white; /* Force white text on spans inside primary buttons */
-  }
-
-  .bg-dynamic {
-    @apply !bg-mainBg border border-neutral-200 dark:!border-neutral-700 shadow-actionHover;
-  }
-
-  .bg-dynamicBase {
-    @apply !bg-mainBgPaper;
-  }
-
-  .dark {
-    /* dark */
-    p,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6,
-      span:not(.ant-btn span), /* Exclude button spans in dark mode too */
-      form {
-      @apply text-mainTextDark;
-    }
-
-    /* Dark mode button overrides */
-    .ant-btn-primary {
-      @apply !text-white;
-    }
-
-    .ant-btn-primary span {
-      @apply !text-white;
-    }
-
-    .bg-dynamicBase {
-      @apply !bg-mainBgDark;
-    }
-
-    .bg-dynamic {
-      @apply !bg-neutral-800 border-0 shadow-none;
-    }
+  /* Selection */
+  ::selection {
+    background: rgba(16, 163, 127, 0.3);
+    color: #ececf1;
   }
 }
 
-.ant-tabs-tab div.ant-tabs-tab-btn {
-  @apply !text-sm md:!text-base;
+/* Ant Design Overrides for Dark Mode */
+
+/* Button styles */
+.ant-btn {
+  @apply !transition-all !duration-200;
 }
 
-.ant-picker-range .ant-picker-input input {
-  @apply !text-sm md:!text-base;
+.ant-btn-primary {
+  @apply !bg-[#10A37F] !border-[#10A37F] !text-white;
 }
 
-.ant-tabs-tab {
-  @apply text-base !font-medium !text-neutral-400;
-  transition: color 0.3s ease;
+.ant-btn-primary:hover:not(:disabled) {
+  @apply !bg-[#1ABC9C] !border-[#1ABC9C];
 }
 
-.ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #3c82f6; /* Warna aktif (sesuaikan dengan kebutuhan Anda) */
+.ant-btn-primary:active:not(:disabled) {
+  @apply !bg-[#0D8A6A] !border-[#0D8A6A];
 }
 
-.ant-tabs-tab:hover {
-  @apply !text-neutral-500;
+.ant-btn-default {
+  @apply !bg-transparent !border-[#565869] !text-[#ECECF1];
 }
 
-@keyframes bgAnim {
-  0% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+.ant-btn-default:hover:not(:disabled) {
+  @apply !bg-[#40414F] !border-[#6E6E80] !text-white;
 }
 
-.login-container {
-  background-position: top center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  animation: bgAnim 40s ease 0s infinite alternate-reverse both;
+.ant-btn-text {
+  @apply !text-[#ECECF1];
 }
 
-thead {
-  th {
-    @apply !text-xs md:!text-sm uppercase !text-neutral-500;
-  }
+.ant-btn-text:hover:not(:disabled) {
+  @apply !bg-[#40414F];
 }
-
-tbody {
-  td {
-    @apply !text-xs md:!text-sm;
-  }
-}
-
-label {
-  @apply !text-xs;
-}
-
-.ant-menu-submenu-title {
-  @apply !text-white;
-}
-
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none !important;
-  margin: 0 !important;
-}
-
-/* Firefox */
-input[type="number"] {
-  -moz-appearance: textfield !important;
-}
-
-.ant-layout-sider-zero-width-trigger {
-  @apply !hidden;
-}
-
-.ant-pagination {
-  li {
-    @apply !rounded-full !border-none;
-  }
-}
-
-.ant-upload.ant-upload-select {
-  @apply !h-full !w-full;
-}
-
-.react-datepicker {
-  width: 100% !important; /* Pastikan DatePicker sesuai container */
-  font-size: 14px;
-}
-
-.react-datepicker__input-container input {
-  width: 100%; /* Pastikan inputnya sesuai container */
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.react-datepicker-popper {
-  z-index: 1050 !important; /* Pastikan muncul di atas elemen lain */
-}
-
-/* //input overide ant design */
 
 /* Input styles */
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-input-number,
 .ant-select-selector {
-  @apply !bg-mainBgPaper !border-neutral-200 !text-mainText !rounded-lg;
-}
-
-.ant-input-affix-wrapper .ant-input {
-  @apply !bg-transparent !border-none !shadow-none !text-mainText;
+  @apply !bg-[#40414F] !border-[#565869] !rounded-xl;
 }
 
 .ant-input:hover,
 .ant-input-affix-wrapper:hover,
 .ant-input-number:hover,
 .ant-select:hover .ant-select-selector {
-  @apply !border-mainColor;
+  @apply !border-[#10A37F];
 }
 
 .ant-input:focus,
 .ant-input-affix-wrapper-focused,
 .ant-input-number-focused,
 .ant-select-focused .ant-select-selector {
-  @apply !border-mainColor !shadow-none;
+  @apply !border-[#10A37F] !shadow-none;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2) !important;
 }
 
 .ant-input::placeholder,
 .ant-input-affix-wrapper input::placeholder,
 .ant-input-number::placeholder,
 .ant-select-selection-placeholder {
-  @apply !text-mainTextSecondary;
+  @apply !text-[#8E8EA0];
 }
 
-.ant-input-disabled,
-.ant-input-affix-wrapper-disabled,
-.ant-input-number-disabled,
-.ant-select-disabled .ant-select-selector {
-  @apply !bg-neutral-100 !text-mainTextDisabled;
+/* Dropdown styles */
+.ant-dropdown-menu {
+  @apply !bg-[#40414F] !border !border-[#565869] !rounded-xl !shadow-xl;
 }
 
-/* Prevent browser autofill turning dark */
-input:-webkit-autofill,
-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px var(--color-background-paper) inset;
-  -webkit-text-fill-color: var(--color-text-primary);
-  caret-color: var(--color-text-primary);
+.ant-dropdown-menu-item {
+  @apply !text-[#ECECF1];
 }
 
-/* Table styles */
-
-.ant-table {
-  @apply !bg-transparent text-mainText;
+.ant-dropdown-menu-item:hover {
+  @apply !bg-[#565869];
 }
 
-.ant-table-container {
-  @apply !bg-transparent;
+/* Modal styles */
+.ant-modal-content {
+  @apply !bg-[#40414F] !rounded-2xl;
 }
 
-.ant-table-content {
-  @apply !bg-transparent;
+.ant-modal-header {
+  @apply !bg-transparent !border-b !border-[#565869];
 }
 
-/* Header styles */
-.ant-table-thead > tr > th {
-  @apply !bg-neutral-50
-         !text-neutral-600
-         !font-medium !text-xs md:!text-sm !uppercase 
-         !border-neutral-200 whitespace-nowrap;
+.ant-modal-title {
+  @apply !text-[#ECECF1];
 }
 
-/* Body styles */
-.ant-table-tbody > tr > td {
-  @apply !bg-white
-         !text-mainText
-         !text-xs md:!text-sm 
-         !border-neutral-200;
+.ant-modal-close {
+  @apply !text-[#8E8EA0];
 }
 
-/* Hover state */
-.ant-table-tbody > tr:hover > td {
-  @apply !bg-neutral-50;
+.ant-modal-close:hover {
+  @apply !text-white !bg-[#565869];
 }
 
-/* Selected row */
-.ant-table-tbody > tr.ant-table-row-selected > td {
-  @apply !bg-mainColor/10;
+.ant-modal-body {
+  @apply !text-[#ECECF1];
 }
 
-.ant-table-tbody > tr.ant-table-row-selected:hover > td {
-  @apply !bg-mainColor/20;
+.ant-modal-footer {
+  @apply !border-t !border-[#565869];
 }
 
-/* Link button in table */
-.ant-table .ant-btn-link {
-  @apply !text-mainColor;
+/* Tooltip styles */
+.ant-tooltip-inner {
+  @apply !bg-[#40414F] !rounded-lg;
 }
 
-/* Tag styles in table */
-/*
-.ant-table .ant-tag {
-  @apply !text-mainTextDark;
+.ant-tooltip-arrow::before {
+  @apply !bg-[#40414F];
 }
-*/
 
-/* Pagination styles */
-.ant-pagination {
-  @apply !mt-4;
-  .ant-select-selector {
-    @apply !h-[40px];
+/* Menu styles */
+.ant-menu {
+  @apply !bg-transparent !border-none;
+}
+
+.ant-menu-item {
+  @apply !text-[#ACACBE] !rounded-lg !mx-2;
+}
+
+.ant-menu-item:hover {
+  @apply !bg-[#2D2D3A] !text-white;
+}
+
+.ant-menu-item-selected {
+  @apply !bg-[#2D2D3A] !text-white;
+}
+
+/* Message bubbles */
+.message-user {
+  @apply bg-transparent;
+}
+
+.message-assistant {
+  @apply bg-[#444654];
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.ant-pagination-item {
-  @apply !bg-transparent
-         !border-neutral-200;
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 163, 127, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(16, 163, 127, 0);
+  }
 }
 
-.ant-pagination-item a {
-  @apply !text-mainText;
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.ant-pagination-item-active {
-  @apply !border-mainColor;
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
 }
 
-.ant-pagination-item-active a {
-  @apply !text-mainColor;
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-.ant-pagination-item:hover {
-  @apply !border-mainColor;
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid #10a37f;
+  outline-offset: 2px;
 }
 
-.ant-pagination-prev .ant-pagination-item-link,
-.ant-pagination-next .ant-pagination-item-link {
-  @apply !bg-transparent
-         !border-neutral-200
-         !text-mainText;
+/* Prevent text selection on buttons */
+button {
+  user-select: none;
 }
 
-.ant-pagination-prev:hover .ant-pagination-item-link,
-.ant-pagination-next:hover .ant-pagination-item-link {
-  @apply !border-mainColor
-         !text-mainColor;
+/* Loading dots animation */
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
 }
 
-.ant-pagination-disabled .ant-pagination-item-link {
-  @apply !text-neutral-400;
+.animate-bounce {
+  animation: bounce 1.4s infinite ease-in-out;
 }
 
-/* Menu chevron/arrow icon styles */
-.ant-menu-submenu-arrow {
-  color: #374151 !important; /* Dark gray for light mode */
+/* Hide number input spinners */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
 }
 
-.dark .ant-menu-submenu-arrow {
-  color: #f3f4f6 !important; /* Light gray for dark mode */
+input[type="number"] {
+  -moz-appearance: textfield !important;
 }
 
-.ant-menu-submenu-arrow::before,
-.ant-menu-submenu-arrow::after {
-  background-color: #374151 !important; /* Dark gray for light mode */
+/* Textarea no resize */
+textarea {
+  resize: none;
 }
 
-.dark .ant-menu-submenu-arrow::before,
-.dark .ant-menu-submenu-arrow::after {
-  background-color: #f3f4f6 !important; /* Light gray for dark mode */
-}
-
-.ant-menu-submenu:hover .ant-menu-submenu-arrow {
-  color: #3b82f6 !important; /* Blue on hover */
-}
-
-.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow {
-  color: #60a5fa !important; /* Light blue on hover in dark mode */
-}
-
-.ant-menu-submenu:hover .ant-menu-submenu-arrow::before,
-.ant-menu-submenu:hover .ant-menu-submenu-arrow::after {
-  background-color: #3b82f6 !important; /* Blue on hover */
-}
-
-.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow::before,
-.dark .ant-menu-submenu:hover .ant-menu-submenu-arrow::after {
-  background-color: #60a5fa !important; /* Light blue on hover in dark mode */
-}
-
-/* Alternative approach for chevron icon */
-.ant-menu-submenu .ant-menu-submenu-expand-icon {
-  color: #374151 !important; /* Dark gray for light mode */
-}
-
-.dark .ant-menu-submenu .ant-menu-submenu-expand-icon {
-  color: #f3f4f6 !important; /* Light gray for dark mode */
-}
-
-.ant-menu-submenu:hover .ant-menu-submenu-expand-icon {
-  color: #3b82f6 !important; /* Blue on hover */
-}
-
-.dark .ant-menu-submenu:hover .ant-menu-submenu-expand-icon {
-  color: #60a5fa !important; /* Light blue on hover in dark mode */
-}
-
-/* Ensure all menu icons are visible */
-.ant-menu .anticon {
-  color: #374151 !important; /* Dark gray for light mode */
-}
-
-.dark .ant-menu .anticon {
-  color: #f3f4f6 !important; /* Light gray for dark mode */
-}
-
-.ant-menu-item:hover .anticon,
-.ant-menu-submenu:hover .anticon {
-  color: #3b82f6 !important; /* Blue on hover */
-}
-
-.dark .ant-menu-item:hover .anticon,
-.dark .ant-menu-submenu:hover .anticon {
-  color: #60a5fa !important; /* Light blue on hover in dark mode */
-}
-
-/* Sembunyikan panel kalender kedua */
-.dateRangePicker .ant-picker-panels > .ant-picker-panel:last-child {
-  display: none !important;
-}
-.dateRangePicker .ant-picker-panels {
-  justify-content: center;
+/* Autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #40414f inset !important;
+  -webkit-text-fill-color: #ececf1 !important;
+  caret-color: #ececf1 !important;
 }
