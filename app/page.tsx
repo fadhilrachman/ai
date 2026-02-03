@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, Suspense } from "react";
 import {
   Sidebar,
   ChatContainer,
@@ -8,10 +8,11 @@ import {
   DocumentReferenceModal,
   ChartConfig,
 } from "@/components/chat";
-import { Button, message as antMessage } from "antd";
+import { Button } from "antd";
+import { message as antMessage } from "@/lib/antd-static";
 import { FileTextOutlined } from "@ant-design/icons";
 import { documentReferences } from "@/lib/dummy";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import chatApi from "@/lib/chatApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -36,8 +37,9 @@ const processHistory = (historyItems: any[]) => {
   return Array.from(conversationsMap.values()).sort((a, b) => b.timestamp - a.timestamp);
 };
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,6 +56,19 @@ export default function Home() {
       router.push("/login");
     }
   }, [router]);
+
+  // Sync activeChatId from URL on mount/update
+  useEffect(() => {
+    const paramId = searchParams.get("conversation_id");
+    if (paramId && paramId !== activeChatId) {
+      setActiveChatId(paramId);
+    } else if (!paramId && activeChatId) {
+      // If URL has no ID but state does, clearing state might be intended 
+      // ONLY if we want strictly URL driven. 
+      // But let's assume if user hits back to root, we clear chat.
+      setActiveChatId(null);
+    }
+  }, [searchParams, activeChatId]);
 
   // Fetch History
   const { data: historyData } = useQuery({
@@ -79,41 +94,46 @@ export default function Home() {
     return processHistory(historyData.history);
   }, [historyData]);
 
-  // Auto-select latest chat if none selected
-  useEffect(() => {
-    if (!activeChatId && chatHistoryList.length > 0) {
-      setActiveChatId(chatHistoryList[0].id);
-    }
-  }, [chatHistoryList, activeChatId]);
-
   // Transform history items into Messages when activeChatId changes
   useEffect(() => {
-    if (activeChatId && historyData?.history) {
-      const filtered = historyData.history
-        .filter((item: any) => item.conversation_id === activeChatId)
-        .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-      const mappedMessages: Message[] = [];
-      filtered.forEach((item: any) => {
-        // User message
-        mappedMessages.push({
-          id: `user-${item.id}`,
-          role: "user",
-          content: item.user_message,
-          timestamp: new Date(item.created_at),
-        });
-        // AI response
-        mappedMessages.push({
-          id: `ai-${item.id}`,
-          role: "assistant",
-          content: item.response_text,
-          timestamp: new Date(item.created_at), // Using same timestamp for simplicity or add offset
-          chartConfig: item.response_chart_json || undefined,
-        });
-      });
-      setMessages(mappedMessages);
-    } else if (!activeChatId) {
+    if (!activeChatId) {
       setMessages([]);
+      return;
+    }
+
+    if (historyData?.history) {
+      const isHistoryChat = historyData.history.some(
+        (item: any) => item.conversation_id === activeChatId
+      );
+
+      if (isHistoryChat) {
+        const filtered = historyData.history
+          .filter((item: any) => item.conversation_id === activeChatId)
+          .sort(
+            (a: any, b: any) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+
+        const mappedMessages: Message[] = [];
+        filtered.forEach((item: any) => {
+          // User message
+          mappedMessages.push({
+            id: `user-${item.id}`,
+            role: "user",
+            content: item.user_message,
+            timestamp: new Date(item.created_at),
+          });
+          // AI response
+          mappedMessages.push({
+            id: `ai-${item.id}`,
+            role: "assistant",
+            content: item.response_text,
+            timestamp: new Date(item.created_at), // Using same timestamp for simplicity or add offset
+            chartConfig: item.response_chart_json || undefined,
+          });
+        });
+        setMessages(mappedMessages);
+      }
     }
   }, [activeChatId, historyData]);
 
@@ -147,18 +167,14 @@ export default function Home() {
   const handleSend = useCallback(async () => {
     if (!inputValue.trim() || sendMutation.isPending) return;
 
-    // Use current activeChatId or generate a new one if it's the first message
-    // Actually API expects conversation_id to link messages. 
-    // If null, API might start new? The swagger says optional.
-    // We should maintain one conversation_id for the session if activeChatId is set.
-    // If NO activeChatId, we can generate one CLIENT side or let backend handle it.
-    // Let's generate one if null so we can group them in UI immediately?
-    // Or simpler: just send conversation_id if activeChatId exists.
-    
     let currentConversationId = activeChatId;
     if (!currentConversationId) {
        currentConversationId = `conv-${Date.now()}`;
-       setActiveChatId(currentConversationId);
+       // Update URL and State
+       // Note: activeChatId state update via useEffect might be slightly delayed, 
+       // but we need it here for the mutation.
+       setActiveChatId(currentConversationId); 
+       router.push(`/?conversation_id=${currentConversationId}`);
     }
 
     const userMessage: Message = {
@@ -175,21 +191,29 @@ export default function Home() {
       message: userMessage.content,
       conversation_id: currentConversationId,
     });
-  }, [inputValue, sendMutation, activeChatId]);
+  }, [inputValue, sendMutation, activeChatId, router]);
 
   const handleNewChat = useCallback(() => {
     setActiveChatId(null);
     setMessages([]);
     setInputValue("");
-  }, []);
+    router.push('/');
+  }, [router]);
 
   const handleSelectChat = useCallback((id: string) => {
     setActiveChatId(id);
-  }, []);
+    router.push(`/?conversation_id=${id}`);
+  }, [router]);
 
   const handleSuggestedPrompt = useCallback((prompt: string) => {
     setInputValue(prompt);
   }, []);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    router.push("/login");
+  }, [router]);
 
   return (
     <div className="flex relative h-screen bg-[#343541] overflow-hidden">
@@ -201,6 +225,7 @@ export default function Home() {
         activeChatId={activeChatId}
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
+        onLogout={handleLogout}
       />
 
       {/* Main Chat Area */}
@@ -233,12 +258,19 @@ export default function Home() {
       </div>
 
       <DocumentReferenceModal
-        documents={documentReferences}
         open={modal.documentReferences}
         onClose={() => {
           setModal((p) => ({ ...p, documentReferences: false }));
         }}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#343541] text-[#ECECF1]">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

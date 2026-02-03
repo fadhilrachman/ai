@@ -7,6 +7,7 @@ import {
   MessageOutlined,
   SettingOutlined,
   UserOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined
 } from "@ant-design/icons";
@@ -24,6 +25,7 @@ interface SidebarProps {
   activeChatId: string | null;
   onNewChat: () => void;
   onSelectChat: (id: string) => void;
+  onLogout: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -33,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeChatId,
   onNewChat,
   onSelectChat,
+  onLogout,
 }) => {
   return (
     <div
@@ -118,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer */}
       <div className={`p-3 border-t border-[#2D2D3A] ${isCollapsed ? "hidden md:block" : ""}`}>
         <div className="space-y-1">
-          <Tooltip title={isCollapsed ? "Settings" : ""} placement="right">
+          {/* <Tooltip title={isCollapsed ? "Settings" : ""} placement="right">
             <div
               className={`
                 flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
@@ -128,6 +131,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <SettingOutlined className="text-sm flex-shrink-0" />
               {!isCollapsed && <span className="text-sm">Settings</span>}
+            </div>
+          </Tooltip> */}
+          <Tooltip title={isCollapsed ? "Logout" : ""} placement="right">
+            <div
+              onClick={onLogout}
+              className={`
+                flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
+                text-[#ACACBE] hover:bg-red-500/10 hover:text-red-500
+                transition-all duration-200
+              `}
+            >
+              <LogoutOutlined className="text-sm flex-shrink-0" />
+              {!isCollapsed && <span className="text-sm">Logout</span>}
             </div>
           </Tooltip>
           <Tooltip title={isCollapsed ? "Profile" : ""} placement="right">

@@ -12,7 +12,7 @@ let modal: ModalStaticFunctions;
 const AntdStaticFunctions = () => {
   const staticFunctions = App.useApp();
   message = staticFunctions.message;
-  modal = staticFunctions.modal;
+  modal = staticFunctions.modal as unknown as ModalStaticFunctions;
   notification = staticFunctions.notification;
   return null;
 };

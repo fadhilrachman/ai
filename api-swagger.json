@@ -1,128 +1,448 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "NOC RAG API",
-    "description": "POC untuk sistem chat berbasis dokumen menggunakan DeepSeek LLM.",
-    "termsOfService": "",
-    "contact": {"email": "dev@arnatech.id"},
-    "license": {"name": "Proprietary"},
-    "version": "v1"
-  },
-  "host": "noc-rag-poc.arnatech.id",
-  "schemes": ["https"],
-  "basePath": "/api",
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
-  "securityDefinitions": {
-    "Bearer": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header",
-      "description": "Bearer token dari SSO Arnatech. Format: Bearer <access_token>"
-    }
-  },
-  "security": [{"Bearer": []}],
-  "definitions": {
-    "ChartDataset": {
-      "type": "object",
-      "properties": {
-        "label": {"type": "string"},
-        "data": {"type": "array", "items": {"type": "number"}},
-        "backgroundColor": {"type": "string"},
-        "borderColor": {"type": "string"},
-        "borderWidth": {"type": "integer"},
-        "tension": {"type": "number"}
-      }
-    },
-    "ChartData": {
-      "type": "object",
-      "properties": {
-        "labels": {"type": "array", "items": {"type": "string"}},
-        "datasets": {
-          "type": "array",
-          "items": {"$ref": "#/definitions/ChartDataset"}
-        }
-      }
-    },
-    "Chart": {
-      "type": "object",
-      "properties": {
-        "type": {"type": "string"},
-        "data": {"$ref": "#/definitions/ChartData"},
-        "options": {"type": "object"}
-      }
-    },
-    "ChatResponse": {
-      "type": "object",
-      "properties": {
-        "text": {"type": "string"},
-        "chart": {"$ref": "#/definitions/Chart", "nullable": true}
-      }
-    },
-    "ChatHistoryItem": {
-      "type": "object",
-      "properties": {
-        "id": {"type": "integer"},
-        "user_message": {"type": "string"},
-        "response_text": {"type": "string"},
-        "response_chart_json": {"$ref": "#/definitions/Chart", "nullable": true},
-        "document_ids": {"type": "array", "items": {"type": "integer"}},
-        "conversation_id": {"type": "string"},
-        "created_at": {"type": "string", "format": "date-time"}
-      }
-    },
-    "ChatHistoryResponse": {
-      "type": "object",
-      "properties": {
-        "count": {"type": "integer"},
-        "history": {
-          "type": "array",
-          "items": {"$ref": "#/definitions/ChatHistoryItem"}
-        }
-      }
-    }
-  },
-  "paths": {
-    "/chat/": {
-      "post": {
-        "operationId": "chat_create",
-        "description": "Kirim pesan chat dan terima response dari LLM dengan konteks dokumen.",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": ["message"],
-              "properties": {
-                "message": {"type": "string", "maxLength": 5000},
-                "conversation_id": {"type": "string", "maxLength": 100}
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {"description": "Response berhasil", "schema": {"$ref": "#/definitions/ChatResponse"}},
-          "400": {"description": "Bad Request - Validasi gagal"},
-          "401": {"description": "Unauthorized - Token tidak valid atau tidak ada"},
-          "502": {"description": "Error dari LLM API"}
-        },
-        "tags": ["Chat"],
-        "security": [{"Bearer": []}]
-      }
-    },
-    "/chat/history": {
-      "get": {
-        "operationId": "chat_history_list",
-        "description": "List history chat milik user (50 terakhir).",
-        "responses": {
-          "200": {"description": "History berhasil diambil", "schema": {"$ref": "#/definitions/ChatHistoryResponse"}},
-          "401": {"description": "Unauthorized - Token tidak valid atau tidak ada"}
-        },
-        "tags": ["Chat"],
-        "security": [{"Bearer": []}]
-      }
-    }
-  }
+"swagger": "2.0",
+"info": {
+"title": "NOC RAG API",
+"description": "\n# NOC RAG POC - Chat RAG-like API Documentation\n\nPOC untuk sistem chat berbasis dokumen menggunakan DeepSeek LLM.\n\n## Authentication\n\nSemua endpoint memerlukan Bearer token dari SSO Arnatech.\n\n**Header format:**\n```\nAuthorization: Bearer <access_token>\n```\n\n**Cara mendapatkan token:**\n1. Login via SSO: `POST https://sso.arnatech.id/api/auth/login/`\n2. Gunakan access token yang diterima di header Authorization\n\n## Features\n\n- 📄 **Document Management**: Upload dan kelola dokumen (PDF, DOCX, TXT)\n- 💬 **Chat**: Chat dengan konteks dokumen menggunakan LLM\n- 📊 **Chart Generation**: Generate chart dalam format Chart.js\n- 🔐 **SSO Authentication**: Integrasi dengan SSO Arnatech\n\n## Supported Document Formats\n\n- PDF (dengan text layer)\n- DOCX (Microsoft Word)\n- TXT (Plain text)\n\n## Response Format\n\nChat response berisi:\n- `text`: Jawaban dari LLM dalam Bahasa Indonesia\n- `chart`: Object Chart.js (null jika tidak diminta atau data tidak cukup)\n\n## Error Codes\n\n- `400`: Bad Request - Validasi gagal\n- `401`: Unauthorized - Token tidak valid\n- `413`: Payload Too Large - File > 10MB\n- `415`: Unsupported Media Type - Format tidak didukung\n- `422`: Unprocessable Entity - Gagal ekstraksi dokumen\n- `502`: Bad Gateway - Error dari LLM API\n",
+"termsOfService": "",
+"contact": {
+"email": "dev@arnatech.id"
+},
+"license": {
+"name": "Proprietary"
+},
+"version": "v1"
+},
+"host": "noc-rag-poc.arnatech.id",
+"schemes": [
+"https"
+],
+"basePath": "/api",
+"consumes": [
+"application/json"
+],
+"produces": [
+"application/json"
+],
+"securityDefinitions": {
+"Bearer": {
+"type": "apiKey",
+"name": "Authorization",
+"in": "header",
+"description": "Bearer token dari SSO Arnatech. Format: Bearer <access_token>"
+}
+},
+"security": [
+{
+"Bearer": []
+}
+],
+"paths": {
+"/chat/": {
+"post": {
+"operationId": "chat_create",
+"description": "\nKirim pesan chat dan terima response dari LLM dengan konteks dokumen.\n\n**Cara kerja (OTOMATIS):**\n1. Sistem mengambil SEMUA dokumen milik user dari database sebagai konteks\n2. Sistem AUTO-DETECT apakah perlu chart berdasarkan kata kunci di message:\n   - Keywords: \"chart\", \"grafik\", \"visualisasi\", \"diagram\", \"perbandingan\", \"tren\", dll\n   - AI akan generate chart jika data cukup dan relevan\n3. Konten dokumen dimasukkan sebagai konteks ke LLM\n4. LLM menjawab dalam Bahasa Indonesia berdasarkan konteks\n5. Jika terdeteksi perlu chart dan data cukup, LLM generate chart dalam format Chart.js\n\n**Payload Simplified:**\n- Hanya perlu kirim `message` saja!\n- Tidak perlu specify `document_ids` (auto dari DB)\n- Tidak perlu specify `include_chart` (auto-detect dari message)\n- `conversation_id` opsional untuk tracking percakapan\n\n**Tips:**\n- Untuk minta chart, gunakan kata \"chart\", \"grafik\", \"visualisasi\", \"perbandingan\" di message\n- Contoh: \"Buatkan grafik perbandingan target vs capaian NPS\"\n- Spesifik dalam pertanyaan untuk hasil lebih akurat\n",
+"parameters": [
+{
+"name": "data",
+"in": "body",
+"required": true,
+"schema": {
+"required": [
+"message"
+],
+"type": "object",
+"properties": {
+"message": {
+"description": "Pesan/pertanyaan dari user",
+"type": "string",
+"example": "Berapa target NPS Q3 2025 untuk Jawa Barat?",
+"maxLength": 5000
+},
+"conversation_id": {
+"description": "ID untuk mempertahankan konteks percakapan (opsional)",
+"type": "string",
+"example": "conv-abc-123",
+"maxLength": 100
+}
+}
+}
+}
+],
+"responses": {
+"200": {
+"description": "Response berhasil",
+"examples": {
+"application/json": {
+"text": "Berdasarkan dokumen Laporan Q3 2025, target NPS untuk Jawa Barat pada Q3 2025 adalah:\n- Juli: 80\n- Agustus: 82\n- September: 83",
+"chart": null
+},
+"application/json (with chart)": {
+"text": "Berikut perbandingan target vs capaian NPS Q3 2025 untuk Jawa Barat:",
+"chart": {
+"type": "bar",
+"data": {
+"labels": [
+"Jul",
+"Agu",
+"Sep"
+],
+"datasets": [
+{
+"label": "Target",
+"data": [
+80,
+82,
+83
+]
+},
+{
+"label": "Capaian",
+"data": [
+78,
+81,
+84
+]
+}
+]
+},
+"options": {
+"responsive": true
+}
+}
+}
+}
+},
+"400": {
+"description": "Bad Request - Validasi gagal",
+"examples": {
+"application/json": {
+"error": "Validasi gagal",
+"details": {
+"field_name": [
+"Error message"
+]
+}
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+},
+"502": {
+"description": "Error dari LLM API",
+"examples": {
+"application/json": {
+"error": "Gagal mendapatkan response dari LLM",
+"details": "Timeout saat memanggil DeepSeek API"
+}
+}
+}
+},
+"tags": [
+"Chat"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"parameters": []
+},
+"/chat/history": {
+"get": {
+"operationId": "chat_history_list",
+"description": "\nList history chat milik user (50 terakhir).\n\nHistory mencakup:\n- Pesan user\n- Response text dari LLM\n- Chart data (jika ada)\n- Document IDs yang digunakan\n- Conversation ID (jika ada)\n",
+"parameters": [],
+"responses": {
+"200": {
+"description": "History berhasil diambil",
+"examples": {
+"application/json": {
+"count": 15,
+"history": [
+{
+"id": 1,
+"user_message": "Berapa target NPS?",
+"response_text": "Target NPS adalah...",
+"response_chart_json": null,
+"document_ids": [
+1,
+2
+],
+"conversation_id": "conv-123",
+"created_at": "2026-01-30T12:00:00Z"
+}
+]
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+}
+},
+"tags": [
+"Chat"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"parameters": []
+},
+"/documents/": {
+"get": {
+"operationId": "documents_list",
+"description": "\nList semua dokumen milik user yang sedang login.\n\nDokumen diurutkan berdasarkan waktu upload (terbaru di atas).\n",
+"parameters": [],
+"responses": {
+"200": {
+"description": "List dokumen berhasil diambil",
+"examples": {
+"application/json": {
+"count": 3,
+"documents": [
+{
+"id": 1,
+"title": "Laporan Q3 2025",
+"source_filename": "report.pdf",
+"mime_type": "application/pdf",
+"content_length": 15420,
+"content_preview": "Preview...",
+"created_at": "2026-01-30T10:15:30Z",
+"updated_at": "2026-01-30T10:15:30Z"
+}
+]
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+}
+},
+"tags": [
+"Documents"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"post": {
+"operationId": "documents_create",
+"description": "\nUpload dokumen baru untuk digunakan sebagai konteks chat.\n\n**Format yang didukung:**\n- PDF (dengan text layer, bukan hasil scan)\n- DOCX (Microsoft Word)\n- TXT (Plain text)\n\n**Batasan:**\n- Ukuran maksimal: 10 MB\n- File hasil scan (image-only PDF) tidak didukung\n\n**Response:**\n- 201: Dokumen berhasil diupload\n- 400: Validasi gagal (dokumen kosong, dll)\n- 401: Token tidak valid\n- 413: File terlalu besar (>10MB)\n- 415: Format file tidak didukung\n- 422: Gagal ekstraksi dokumen\n",
+"parameters": [
+{
+"name": "data",
+"in": "body",
+"required": true,
+"schema": {
+"required": [
+"file"
+],
+"type": "object",
+"properties": {
+"file": {
+"description": "File dokumen (PDF/DOCX/TXT)",
+"type": "file"
+},
+"title": {
+"description": "Judul dokumen (opsional, default: nama file)",
+"type": "string",
+"maxLength": 500
+}
+}
+}
+}
+],
+"responses": {
+"201": {
+"description": "Dokumen berhasil diupload",
+"examples": {
+"application/json": {
+"message": "Dokumen berhasil diupload",
+"document": {
+"id": 1,
+"title": "Laporan Q3 2025",
+"source_filename": "report.pdf",
+"mime_type": "application/pdf",
+"content_length": 15420,
+"content_preview": "LAPORAN KINERJA...",
+"created_at": "2026-01-30T10:15:30.123456Z",
+"updated_at": "2026-01-30T10:15:30.123456Z"
+}
+}
+}
+},
+"400": {
+"description": "Bad Request - Validasi gagal",
+"examples": {
+"application/json": {
+"error": "Validasi gagal",
+"details": {
+"field_name": [
+"Error message"
+]
+}
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+},
+"413": {
+"description": "File terlalu besar",
+"examples": {
+"application/json": {
+"error": "Validasi gagal",
+"details": {
+"file": [
+"Ukuran file melebihi batas maksimal 10 MB"
+]
+}
+}
+}
+},
+"415": {
+"description": "Format tidak didukung",
+"examples": {
+"application/json": {
+"error": "Format file tidak didukung",
+"mime_type": "image/jpeg",
+"supported_formats": "PDF, DOCX, TXT"
+}
+}
+},
+"422": {
+"description": "Gagal ekstraksi",
+"examples": {
+"application/json": {
+"error": "Gagal mengekstrak dokumen",
+"details": "PDF tidak mengandung teks yang bisa diekstrak"
+}
+}
+}
+},
+"tags": [
+"Documents"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"parameters": []
+},
+"/documents/{id}/": {
+"get": {
+"operationId": "documents_read",
+"description": "\nDetail dokumen dengan full content.\n\nBerbeda dengan list endpoint yang hanya menampilkan preview,\nendpoint ini mengembalikan seluruh isi dokumen yang sudah diekstrak.\n",
+"parameters": [],
+"responses": {
+"200": {
+"description": "Detail dokumen",
+"examples": {
+"application/json": {
+"id": 1,
+"owner_user_id": "user-123",
+"title": "Laporan Q3 2025",
+"content": "Full content here...",
+"source_filename": "report.pdf",
+"mime_type": "application/pdf",
+"content_length": 15420,
+"created_at": "2026-01-30T10:15:30Z",
+"updated_at": "2026-01-30T10:15:30Z"
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+},
+"404": {
+"description": "Dokumen tidak ditemukan"
+}
+},
+"tags": [
+"Documents"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"delete": {
+"operationId": "documents_delete",
+"description": "\nHapus dokumen.\n\nDokumen yang sudah dihapus tidak bisa dikembalikan.\n",
+"parameters": [],
+"responses": {
+"200": {
+"description": "Dokumen berhasil dihapus",
+"examples": {
+"application/json": {
+"message": "Dokumen berhasil dihapus"
+}
+}
+},
+"401": {
+"description": "Unauthorized - Token tidak valid atau tidak ada",
+"examples": {
+"application/json": {
+"detail": "Token tidak valid atau expired"
+}
+}
+},
+"404": {
+"description": "Dokumen tidak ditemukan"
+}
+},
+"tags": [
+"Documents"
+],
+"security": [
+{
+"Bearer": []
+}
+]
+},
+"parameters": [
+{
+"name": "id",
+"in": "path",
+"required": true,
+"type": "string"
+}
+]
+}
+},
+"definitions": {}
 }

@@ -1,11 +1,15 @@
 'use client';
 
+import { useGoogleLogin } from '@react-oauth/google';
 import React from 'react';
-import { Form, Input, Button, Card, Typography, message, Alert } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert } from 'antd';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { message } from '@/lib/antd-static';
+import Link from 'next/link';
+import { FcGoogle } from 'react-icons/fc';
 
 const { Title, Text } = Typography;
 
@@ -28,28 +32,62 @@ const LoginPage = () => {
     },
     onSuccess: (data) => {
       if (data.mfa_required) {
-        // Handle MFA flow here - for now just show message
         message.info(data.message || 'MFA is required. Please provide your MFA token.');
-        // You might want to redirect to an MFA verification page or show an MFA input
       } else if (data.access) {
         localStorage.setItem('access_token', data.access);
         if (data.refresh) {
           localStorage.setItem('refresh_token', data.refresh);
         }
         message.success('Login successful!');
-        router.push('/'); // Redirect to home/dashboard
+        router.push('/');
       }
     },
     onError: (error: any) => {
       if (axios.isAxiosError(error)) {
          const msg = error.response?.data?.message || 'Invalid credentials or validation error.';
-         // Check if it's a field error struct (typical in Django/DRF sometimes)
-         // Assuming simple message for now based on swagger "Invalid credentials"
          setErrorMessage(typeof error.response?.data === 'string' ? error.response.data : msg);
       } else {
         setErrorMessage('An unexpected error occurred. Please try again.');
         console.error(error);
       }
+    },
+  });
+
+  const googleLoginMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const response = await api.post<LoginResponse>('/auth/google-login/', { token });
+      return response.data;
+    },
+    onSuccess: (data: any) => {
+      const accessToken = data.access || data.token;
+      if (accessToken) {
+        localStorage.setItem('access_token', accessToken);
+        if (data.refresh) {
+          localStorage.setItem('refresh_token', data.refresh);
+        }
+        message.success('Google Login successful!');
+        router.push('/');
+      } else {
+        message.error('Login failed: Token not received from server');
+      }
+    },
+    onError: (error: any) => {
+      if (axios.isAxiosError(error)) {
+        const msg = error.response?.data?.message || 'Google Login failed.';
+        setErrorMessage(msg);
+      } else {
+        setErrorMessage('An unexpected error occurred during Google Login.');
+      }
+      console.error(error);
+    }
+  });
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      googleLoginMutation.mutate(tokenResponse.access_token);
+    },
+    onError: () => {
+      message.error('Google Login Unified Failed');
     },
   });
 
@@ -59,18 +97,18 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#343541] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#2b2d35] p-4 font-sans">
       <Card
-        className="w-full max-w-md border-[#565869] bg-[#202123] shadow-xl"
-        bordered={false}
+        className="w-full max-w-md border-[#40434e] bg-[#1a1c22] shadow-2xl rounded-2xl p-4"
+        bordered={true}
       >
-        <div className="mb-8 text-center">
-          <Title level={2} className="!text-[#ECECF1]">
-            Welcome Back
-          </Title>
-          <Text className="text-[#8E8EA0]">
-            Please sign in to your account
-          </Text>
+        <div className="mb-10 text-center">
+           <Title level={2} className="!text-white !font-bold !mb-2 !text-3xl">
+             Welcome Back
+           </Title>
+           <Text className="text-[#9ba1b0] text-base">
+             Please login with your account
+           </Text>
         </div>
 
         {errorMessage && (
@@ -78,7 +116,7 @@ const LoginPage = () => {
             message={errorMessage}
             type="error"
             showIcon
-            className="mb-6 bg-red-900/10 border-red-900/20 text-red-200"
+            className="mb-8 bg-red-900/10 border-red-900/20 text-red-200 rounded-xl"
           />
         )}
 
@@ -86,54 +124,78 @@ const LoginPage = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          requiredMark={false}
+          requiredMark={true}
           size="large"
+          className="space-y-4"
         >
           <Form.Item
             name="email"
-            label={<span className="text-[#ECECF1]">Email Address</span>}
+            label={<span className="text-[#ECECF1] font-medium">Email</span>}
             rules={[
               { required: true, message: 'Please input your email!' },
               { type: 'email', message: 'Please enter a valid email!' },
             ]}
           >
-            <Input
-              placeholder="Enter your email"
-              // Styles are handled by global css override for .ant-input
+            <Input 
+              placeholder="Enter your email" 
+              className="!bg-[#2b2d35] !border-[#40434e] !text-[#ECECF1] h-12 rounded-xl focus:!border-[#10A37F] hover:!border-[#10A37F]" 
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label={<span className="text-[#ECECF1]">Password</span>}
+            label={<span className="text-[#ECECF1] font-medium">Password</span>}
             rules={[{ required: true, message: 'Please input your password!' }]}
           >
-            <Input.Password
-              placeholder="Enter your password"
-              // Styles are handled by global css override
+            <Input.Password 
+              placeholder="Enter your password" 
+              className="!bg-[#2b2d35] !border-[#40434e] !text-[#ECECF1] h-12 rounded-xl focus:!border-[#10A37F] hover:!border-[#10A37F]"
             />
           </Form.Item>
 
-          <Form.Item className="mb-4">
+          <Form.Item className="!mt-8 !mb-6">
             <Button
               type="primary"
               htmlType="submit"
               block
               loading={loginMutation.isPending}
-              className="h-12 font-medium" 
-              // primary button color is overridden in global css to be ChatGPT green
+              className="h-14 font-bold text-lg rounded-full !bg-[#10A37F] hover:!bg-[#0d8e6d] border-none shadow-lg shadow-[#10A37F]/10 transition-all duration-200"
             >
-              Sign In
+              Login
             </Button>
           </Form.Item>
+
+          <div className="flex justify-center mb-8">
+             <button
+                type="button"
+                onClick={() => handleGoogleLogin()}
+                className="flex items-center w-full h-14 px-2 bg-[#1a1c22] border border-[#40434e] rounded-full hover:bg-[#2b2d35] transition-colors group"
+             >
+                <div className="flex items-center justify-center w-10 h-10 bg-white rounded-full ml-1">
+                   <FcGoogle className="text-2xl" />
+                </div>
+                <span className="flex-1 text-[#ECECF1] text-lg font-medium">
+                   Login dengan Google
+                </span>
+             </button>
+          </div>
           
-           <div className="text-center">
-            <Text className="text-[#8E8EA0]">
-              Don't have an account?{' '}
-              <a onClick={() => message.info("Registration not implemented in this demo")} className="text-[#10A37F] hover:text-[#1ABC9C] cursor-pointer hover:underline">
-                Sign up
-              </a>
-            </Text>
+          <div className="space-y-3 pt-6 border-t border-[#40434e]">
+            <div>
+               <Text className="text-[#8E8EA0] text-sm">
+                 Verify your email <Link href="/verify-email" className="text-[#3b82f6] hover:underline font-medium ml-1">Here</Link>
+               </Text>
+            </div>
+            <div>
+               <Text className="text-[#8E8EA0] text-sm">
+                 Don't have an account? <Link href="/register" className="text-[#3b82f6] hover:underline font-medium ml-1">Register</Link>
+               </Text>
+            </div>
+            <div>
+               <Text className="text-[#8E8EA0] text-sm">
+                 Forgot password? <Link href="#" className="text-[#3b82f6] hover:underline font-medium ml-1">Here</Link>
+               </Text>
+            </div>
           </div>
         </Form>
       </Card>

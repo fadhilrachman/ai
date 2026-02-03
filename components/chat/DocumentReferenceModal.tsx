@@ -18,6 +18,8 @@ import {
   SearchOutlined,
   UploadOutlined,
   PaperClipOutlined,
+  EyeOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import chatApi from "@/lib/chatApi";
@@ -33,7 +35,6 @@ export interface DocumentReference {
 interface DocumentReferenceModalProps {
   open: boolean;
   onClose: () => void;
-  // removed 'documents' prop as we fetch it internally
 }
 
 const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
@@ -42,8 +43,13 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState<string | number | null>(null);
+  const [editingDoc, setEditingDoc] = useState<DocumentReference | null>(null);
   const [searchText, setSearchText] = useState("");
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
 
   // Fetch Documents
   const { data: documentsData, isLoading } = useQuery({
@@ -57,16 +63,31 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
 
   const documents: DocumentReference[] = documentsData?.documents || [];
 
+  // Fetch Document Detail
+  const { data: detailData, isLoading: isDetailLoading } = useQuery({
+    queryKey: ["documentDetail", selectedDocId],
+    queryFn: async () => {
+      const response = await chatApi.get(`/documents/${selectedDocId}/`);
+      return response.data;
+    },
+    enabled: !!selectedDocId && isDetailModalOpen,
+  });
+
   // Upload Mutation
   const uploadMutation = useMutation({
     mutationFn: async (values: any) => {
       const formData = new FormData();
+      // Ant Design Upload wraps the raw file in an object. 
+      // We need 'originFileObj' which is the actual File instance.
       if (values.file && values.file[0]) {
-        formData.append("file", values.file[0].originFileObj);
+        const fileObj = values.file[0].originFileObj || values.file[0];
+        formData.append("file", fileObj);
       }
+      
       if (values.title) {
         formData.append("title", values.title);
       }
+      
       const response = await chatApi.post("/documents/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -79,7 +100,19 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["documents"] });
     },
     onError: (error: any) => {
-      antMessage.error(error.response?.data?.error || "Failed to upload document");
+      console.error("Upload Error:", error);
+      const errorData = error.response?.data;
+      let errorMsg = "Failed to upload document";
+      
+      if (errorData) {
+        if (typeof errorData === 'string') errorMsg = errorData;
+        else if (errorData.error) errorMsg = errorData.error;
+        else if (errorData.message) errorMsg = errorData.message;
+        else if (typeof errorData === 'object') {
+           errorMsg = Object.values(errorData).flat().join(" | ");
+        }
+      }
+      antMessage.error(errorMsg || "Upload failed");
     },
   });
 
@@ -92,8 +125,28 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
       antMessage.success("Document deleted");
       queryClient.invalidateQueries({ queryKey: ["documents"] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Delete Error:", error);
       antMessage.error("Failed to delete document");
+    },
+  });
+
+  // Update Mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, title }: { id: string | number; title: string }) => {
+      // Assuming PATCH exists as per request for "update" feature
+      const response = await chatApi.patch(`/documents/${id}/`, { title });
+      return response.data;
+    },
+    onSuccess: () => {
+      antMessage.success("Document updated successfully");
+      setIsEditModalOpen(false);
+      setEditingDoc(null);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: (error: any) => {
+      console.error("Update Error:", error);
+      antMessage.error(error.response?.data?.error || "Failed to update document");
     },
   });
 
@@ -106,22 +159,34 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
     doc.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const handleUpload = () => {
-    form.validateFields().then((values) => {
-        // Antd Upload normalizes file list, we need to handle it
-        // The value from Upload.Dragger inside Form.Item depends on valuePropName specific config
-        // But usually we can get it from event or just manage state.
-        // Let's assume standard normFile usage or check 'values.file' structure.
-        // It typically comes as { file: { fileList: [...] } } or similar if strictly typed.
-        // We will adapt based on standard ant design form behavior.
-        
-        // Actually, without normFile, 'values.file' might be the upload change object.
-        // We often set getValueFromEvent in Form.Item.
-        uploadMutation.mutate({
-            title: values.title,
-            file: values.file?.fileList || (values.file ? [values.file] : []),
-        });
+  const handleViewDetail = (id: string | number) => {
+    setSelectedDocId(id);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEdit = (doc: DocumentReference) => {
+    setEditingDoc(doc);
+    editForm.setFieldsValue({ title: doc.title });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = () => {
+    editForm.validateFields().then((values) => {
+      if (editingDoc) {
+        updateMutation.mutate({ id: editingDoc.id, title: values.title });
+      }
     });
+  };
+
+  const handleUpload = () => {
+    form.validateFields()
+      .then((values) => {
+        // 'values.file' is already the fileList array thanks to normFile
+        uploadMutation.mutate(values);
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info);
+      });
   };
 
   const normFile = (e: any) => {
@@ -146,7 +211,6 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
         className="document-modal"
       >
         <div className="flex flex-col gap-6 mt-4">
-          {/* Header Actions */}
           <div className="flex items-center justify-between gap-4">
             <Input
               prefix={<SearchOutlined className="text-[#8E8EA0]" />}
@@ -166,7 +230,6 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
             </Button>
           </div>
 
-          {/* List View */}
           <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
             {isLoading ? (
                 <div className="text-[#8E8EA0] text-center py-4">Loading documents...</div>
@@ -197,6 +260,18 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
+                      onClick={() => handleViewDetail(doc.id)}
+                      className="!text-[#ACACBE] hover:!text-[#10A37F] hover:!bg-[#10A37F]/10"
+                    />
+                    {/* <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(doc)}
+                      className="!text-[#ACACBE] hover:!text-[#3b82f6] hover:!bg-[#3b82f6]/10"
+                    /> */}
                     <Popconfirm
                       title="Delete document"
                       description="Are you sure you want to delete this document?"
@@ -230,7 +305,6 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
         </div>
       </Modal>
 
-      {/* Add Modal */}
       <Modal
         title={
           <span className="text-[#ECECF1] text-lg">
@@ -286,6 +360,57 @@ const DocumentReferenceModal: React.FC<DocumentReferenceModalProps> = ({
                 Support for PDF, DOCX, and TXT files
               </p>
             </Upload.Dragger>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Detail Modal */}
+      <Modal
+        title={<span className="text-[#ECECF1]">{detailData?.title || "Document Detail"}</span>}
+        open={isDetailModalOpen}
+        onCancel={() => {
+          setIsDetailModalOpen(false);
+          setSelectedDocId(null);
+        }}
+        footer={null}
+        width={700}
+      >
+        <div className="mt-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+          {isDetailLoading ? (
+            <div className="text-[#8E8EA0] text-center py-10">Extracting content...</div>
+          ) : detailData?.content ? (
+            <div className="text-[#ECECF1] whitespace-pre-wrap font-sans leading-relaxed bg-[#343541] p-6 rounded-xl border border-[#565869]">
+              {detailData.content}
+            </div>
+          ) : (
+            <Empty description={<span className="text-[#8E8EA0]">No content available</span>} />
+          )}
+        </div>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title={<span className="text-[#ECECF1]">Rename Document</span>}
+        open={isEditModalOpen}
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          setEditingDoc(null);
+        }}
+        onOk={handleUpdate}
+        confirmLoading={updateMutation.isPending}
+        okText="Save Changes"
+        okButtonProps={{ className: "!bg-[#10A37F] hover:!bg-[#1ABC9C] !border-none" }}
+      >
+        <Form form={editForm} layout="vertical" className="mt-6">
+          <Form.Item
+            name="title"
+            label={<span className="text-[#ECECF1]">New Title</span>}
+            rules={[{ required: true, message: "Please input document title" }]}
+          >
+            <Input 
+              placeholder="Enter new title" 
+              className="!bg-[#343541] !border-[#565869] !text-[#ECECF1]" 
+            />
           </Form.Item>
         </Form>
       </Modal>

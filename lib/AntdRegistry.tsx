@@ -3,8 +3,9 @@
 import React from "react";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import { useServerInsertedHTML } from "next/navigation";
-import { ConfigProvider, theme as antdTheme } from "antd";
+import { App, ConfigProvider, theme as antdTheme } from "antd";
 import colors from "./color";
+import AntdStaticFunctions from "./antd-static";
 
 const StyledComponentsRegistry = ({
   children,
@@ -21,7 +22,7 @@ const StyledComponentsRegistry = ({
   ));
   return (
     <StyleProvider cache={cache}>
-      <ConfigProvider
+        <ConfigProvider
         theme={{
           algorithm: antdTheme.darkAlgorithm,
           token: {
@@ -132,7 +133,10 @@ const StyledComponentsRegistry = ({
           },
         }}
       >
-        {children}
+        <App>
+          <AntdStaticFunctions />
+          {children}
+        </App>
       </ConfigProvider>
     </StyleProvider>
   );

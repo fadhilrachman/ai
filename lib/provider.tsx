@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import type { AxiosError } from "axios";
+import axios from "axios";
 import {
   QueryCache,
   QueryClient,
@@ -8,12 +8,11 @@ import {
   MutationCache,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Modal } from "antd";
+import { modal as Modal } from "./antd-static";
 import StyledComponentsRegistry from "./AntdRegistry";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function Provider({ children }: React.PropsWithChildren) {
-  // const client = new QueryClient({
-
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -24,20 +23,21 @@ function Provider({ children }: React.PropsWithChildren) {
     queryCache: new QueryCache({
       onError: (error) => {
         // cache-level queries error handler
-        // toast.error(`API Error: ${error message}`);
         console.log("==================queries==================");
         console.log(error);
         console.log("====================================");
       },
     }),
     mutationCache: new MutationCache({
-      onError: (error: AxiosError<Record<string, unknown>>) => {
+      onError: (error: Error) => {
         // cache-level mutations error handler
         console.log("==============global mutation======================");
-        console.log(error.response?.data);
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+        }
         console.log("====================================");
 
-        const responseData = error.response?.data ?? {};
+        const responseData = axios.isAxiosError(error) ? error.response?.data ?? {} : {};
         const responseValues = Object.values(responseData);
         const exceptionForModal = responseValues.some((val) =>
           Array.isArray(val)
@@ -50,7 +50,7 @@ function Provider({ children }: React.PropsWithChildren) {
           return;
         }
 
-        if (error.response?.status !== 401) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
           Modal.error({
             title: "Error",
             onOk: () => {},
@@ -61,7 +61,7 @@ function Provider({ children }: React.PropsWithChildren) {
                       Array.isArray(val) ? val.join(", ") : String(val),
                     )
                     .join(" | ")
-                : "Error request"
+                : error.message || "Error request"
             }`,
             okType: "danger",
           });
@@ -70,11 +70,17 @@ function Provider({ children }: React.PropsWithChildren) {
     }),
   });
 
+  // Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google Client ID
+  // You can set this in an environment variable: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <QueryClientProvider client={queryClient}>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   );
 }
 
