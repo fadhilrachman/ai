@@ -42,6 +42,16 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Force redirect to login on 403 Forbidden
+    if (error.response?.status === 403) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+
     // Check if 401 and not a retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {

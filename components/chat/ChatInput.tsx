@@ -31,7 +31,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, [value]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth >= 768) {
       e.preventDefault();
       if (value.trim() && !isLoading && !disabled) {
         onSend();
@@ -40,13 +40,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pb-4">
+    <div className="w-full max-w-4xl mx-auto px-2 md:px-4">
       <div
         className={`
-          relative flex items-end gap-2 p-3 rounded-2xl
+          relative flex items-end gap-2 p-2 md:p-3 rounded-xl md:rounded-2xl
           bg-[#40414F] border border-[#565869]
-          focus-within:border-[#10A37F] focus-within:shadow-lg
-          focus-within:shadow-[#10A37F]/10
+          focus-within:border-[#10A37F] 
           transition-all duration-200
         `}
       >
@@ -60,9 +59,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
           rows={1}
           className={`
             flex-1 resize-none bg-transparent border-none outline-none
-            placeholder-[#8E8EA0]
-            text-base leading-6 max-h-[200px]
+            placeholder-[#8E8EA0] text-[#ECECF1]
+            text-sm md:text-base leading-6 max-h-[150px] md:max-h-[200px]
             disabled:opacity-50 disabled:cursor-not-allowed
+            py-1 md:py-0
           `}
         />
         <Button
@@ -71,7 +71,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           onClick={onSend}
           disabled={!value.trim() || isLoading || disabled}
           className={`
-            !flex-shrink-0 !w-9 !h-9 !p-0 !rounded-lg
+            !flex-shrink-0 !w-8 !h-8 md:!w-9 md:!h-9 !p-0 !rounded-lg
             !bg-[#10A37F] hover:!bg-[#1ABC9C]
             disabled:!bg-[#565869] disabled:!text-[#8E8EA0]
             disabled:hover:!bg-[#565869]
@@ -80,7 +80,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           `}
         />
       </div>
-      <div className="text-center text-xs text-[#8E8EA0] mt-2">
+      <div className="text-center text-[10px] md:text-xs text-[#8E8EA0] mt-2 px-4 line-clamp-1 md:line-clamp-none">
         AI can make mistakes. Consider checking important information.
       </div>
     </div>

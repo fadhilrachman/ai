@@ -6,16 +6,13 @@ import {
   ChatContainer,
   Message,
   DocumentReferenceModal,
-  ChartConfig,
 } from "@/components/chat";
 import { Button } from "antd";
 import { message as antMessage } from "@/lib/antd-static";
-import { FileTextOutlined } from "@ant-design/icons";
-import { documentReferences } from "@/lib/dummy";
+import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import chatApi from "@/lib/chatApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
 
 // Helper to group history by conversation_id
 const processHistory = (historyItems: any[]) => {
@@ -41,13 +38,20 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed on mobile
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [modal, setModal] = useState({
     documentReferences: false,
   });
+
+  // Handle desktop/mobile initial state
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setSidebarCollapsed(false);
+    }
+  }, []);
 
   // Auth Check
   useEffect(() => {
@@ -57,15 +61,12 @@ function HomeContent() {
     }
   }, [router]);
 
-  // Sync activeChatId from URL on mount/update
+  // Sync activeChatId from URL
   useEffect(() => {
     const paramId = searchParams.get("conversation_id");
     if (paramId && paramId !== activeChatId) {
       setActiveChatId(paramId);
     } else if (!paramId && activeChatId) {
-      // If URL has no ID but state does, clearing state might be intended 
-      // ONLY if we want strictly URL driven. 
-      // But let's assume if user hits back to root, we clear chat.
       setActiveChatId(null);
     }
   }, [searchParams, activeChatId]);
@@ -74,18 +75,9 @@ function HomeContent() {
   const { data: historyData } = useQuery({
     queryKey: ["chatHistory"],
     queryFn: async () => {
-      try {
-        const response = await chatApi.get("/chat/history");
-        return response.data;
-      } catch (error: any) {
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          localStorage.removeItem("access_token");
-          router.push("/login");
-        }
-        throw error;
-      }
+      const response = await chatApi.get("/chat/history");
+      return response.data;
     },
-    // Refetch less often to save bandwidth, or rely on invalidation
     staleTime: 1000 * 60 * 5, 
   });
 
@@ -94,7 +86,7 @@ function HomeContent() {
     return processHistory(historyData.history);
   }, [historyData]);
 
-  // Transform history items into Messages when activeChatId changes
+  // Transform history items into Messages
   useEffect(() => {
     if (!activeChatId) {
       setMessages([]);
@@ -116,19 +108,17 @@ function HomeContent() {
 
         const mappedMessages: Message[] = [];
         filtered.forEach((item: any) => {
-          // User message
           mappedMessages.push({
             id: `user-${item.id}`,
             role: "user",
             content: item.user_message,
             timestamp: new Date(item.created_at),
           });
-          // AI response
           mappedMessages.push({
             id: `ai-${item.id}`,
             role: "assistant",
             content: item.response_text,
-            timestamp: new Date(item.created_at), // Using same timestamp for simplicity or add offset
+            timestamp: new Date(item.created_at),
             chartConfig: item.response_chart_json || undefined,
           });
         });
@@ -141,10 +131,9 @@ function HomeContent() {
   const sendMutation = useMutation({
     mutationFn: async (payload: { message: string; conversation_id?: string }) => {
       const response = await chatApi.post("/chat/", payload);
-      return response.data; // { text, chart }
+      return response.data;
     },
-    onSuccess: (data, variables) => {
-      // Create assistant message
+    onSuccess: (data) => {
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
@@ -152,14 +141,11 @@ function HomeContent() {
         timestamp: new Date(),
         chartConfig: data.chart || undefined,
       };
-
       setMessages((prev) => [...prev, assistantMessage]);
-
-      // Invalidate history query to update sidebar if needed
       queryClient.invalidateQueries({ queryKey: ["chatHistory"] });
     },
     onError: (error: any) => {
-      antMessage.error("Failed to send message. Please try again.");
+      antMessage.error("Failed to send message.");
       console.error(error);
     },
   });
@@ -170,9 +156,6 @@ function HomeContent() {
     let currentConversationId = activeChatId;
     if (!currentConversationId) {
        currentConversationId = `conv-${Date.now()}`;
-       // Update URL and State
-       // Note: activeChatId state update via useEffect might be slightly delayed, 
-       // but we need it here for the mutation.
        setActiveChatId(currentConversationId); 
        router.push(`/?conversation_id=${currentConversationId}`);
     }
@@ -186,7 +169,6 @@ function HomeContent() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
-
     sendMutation.mutate({
       message: userMessage.content,
       conversation_id: currentConversationId,
@@ -205,10 +187,6 @@ function HomeContent() {
     router.push(`/?conversation_id=${id}`);
   }, [router]);
 
-  const handleSuggestedPrompt = useCallback((prompt: string) => {
-    setInputValue(prompt);
-  }, []);
-
   const handleLogout = useCallback(() => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -217,7 +195,25 @@ function HomeContent() {
 
   return (
     <div className="flex relative h-screen bg-[#343541] overflow-hidden">
-      {/* Sidebar */}
+      {/* Mobile Top Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#343541] border-b border-[#4E4F60] z-30 flex items-center justify-between px-4">
+        <Button
+          type="text"
+          icon={<MenuOutlined />}
+          onClick={() => setSidebarCollapsed(false)}
+          className="!text-[#ECECF1]"
+        />
+        <div className="text-[#ECECF1] font-medium truncate max-w-[200px]">
+          {activeChatId ? "Current Chat" : "New Chat"}
+        </div>
+        <Button
+          type="text"
+          icon={<PlusOutlined />}
+          onClick={handleNewChat}
+          className="!text-[#ECECF1]"
+        />
+      </div>
+
       <Sidebar
         isCollapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -226,42 +222,38 @@ function HomeContent() {
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
         onLogout={handleLogout}
+        onClose={() => setSidebarCollapsed(true)}
       />
 
       {/* Main Chat Area */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative flex flex-col pt-14 md:pt-0">
         <ChatContainer
           messages={messages}
           inputValue={inputValue}
           onInputChange={setInputValue}
           onSend={handleSend}
           isLoading={sendMutation.isPending}
-          onSuggestedPrompt={handleSuggestedPrompt}
         />
-      </div>
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          onClick={() => {
-            setModal((p) => ({ ...p, documentReferences: true }));
-          }}
-          type="default"
-          size="large"
-          icon={<FileTextOutlined className="text-lg" />}
-        >
-          <span 
-          // className="max-w-0 group-hover:max-w-xs transition-all duration-300 opacity-0 group-hover:opacity-100 whitespace-nowrap ml-0 group-hover:ml-2"
-          >
-            
-            Document References
-          </span>
-        </Button>
+        
+        {/* Document Modal Toggle (Floating Button on Desktop, hidden or relocated on Mobile) */}
+        {!modal.documentReferences && (
+          <div className="fixed top-4 right-4 z-20">
+             <Button
+                type="primary"
+                shape="round"
+                icon={<MenuOutlined />}
+                onClick={() => setModal({ documentReferences: true })}
+                className="!bg-[#10A37F] hover:!bg-[#1ABC9C] border-none shadow-lg"
+              >
+                Docs
+              </Button>
+          </div>
+        )}
       </div>
 
       <DocumentReferenceModal
         open={modal.documentReferences}
-        onClose={() => {
-          setModal((p) => ({ ...p, documentReferences: false }));
-        }}
+        onClose={() => setModal({ documentReferences: false })}
       />
     </div>
   );
@@ -269,7 +261,11 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#343541] text-[#ECECF1]">Loading...</div>}>
+    <Suspense fallback={
+      <div className="h-screen bg-[#343541] flex items-center justify-center text-[#ECECF1]">
+        Loading...
+      </div>
+    }>
       <HomeContent />
     </Suspense>
   );
