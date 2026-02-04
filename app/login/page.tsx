@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { GoogleLogin } from '@react-oauth/google';
-import React from 'react';
-import { Form, Input, Button, Card, Typography, Alert } from 'antd';
-import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
-import { message } from '@/lib/antd-static';
-import Link from 'next/link';
+import { GoogleLogin } from "@react-oauth/google";
+import React from "react";
+import { Form, Input, Button, Card, Typography, Alert } from "antd";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import api from "@/lib/api";
+import { message } from "@/lib/antd-static";
+import Link from "next/link";
 
 const { Title, Text } = Typography;
 
@@ -26,27 +26,33 @@ const LoginPage = () => {
 
   const loginMutation = useMutation({
     mutationFn: async (values: any) => {
-      const response = await api.post<LoginResponse>('/auth/login/', values);
+      const response = await api.post<LoginResponse>("/auth/login/", values);
       return response.data;
     },
     onSuccess: (data) => {
       if (data.mfa_required) {
-        message.info(data.message || 'MFA is required. Please provide your MFA token.');
+        message.info(
+          data.message || "MFA is required. Please provide your MFA token.",
+        );
       } else if (data.access) {
-        localStorage.setItem('access_token', data.access);
+        localStorage.setItem("access_token", data.access);
         if (data.refresh) {
-          localStorage.setItem('refresh_token', data.refresh);
+          localStorage.setItem("refresh_token", data.refresh);
         }
-        message.success('Login successful!');
-        router.push('/');
+        message.success("Login successful!");
+        router.push("/");
       }
     },
     onError: (error: any) => {
       if (axios.isAxiosError(error)) {
-         const msg = error.response?.data?.message || 'Invalid credentials or validation error.';
-         setErrorMessage(typeof error.response?.data === 'string' ? error.response.data : msg);
+        const msg =
+          error.response?.data?.message ||
+          "Invalid credentials or validation error.";
+        setErrorMessage(
+          typeof error.response?.data === "string" ? error.response.data : msg,
+        );
       } else {
-        setErrorMessage('An unexpected error occurred. Please try again.');
+        setErrorMessage("An unexpected error occurred. Please try again.");
         console.error(error);
       }
     },
@@ -54,31 +60,32 @@ const LoginPage = () => {
 
   const googleLoginMutation = useMutation({
     mutationFn: async (token: string) => {
-      const response = await api.post<LoginResponse>('/auth/google-login/', { token });
+      const response = await api.post<LoginResponse>("/auth/google-login/", {
+        token,
+      });
       return response.data;
     },
     onSuccess: (data: any) => {
       const accessToken = data.access || data.token;
       if (accessToken) {
-        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem("access_token", accessToken);
         if (data.refresh) {
-          localStorage.setItem('refresh_token', data.refresh);
+          localStorage.setItem("refresh_token", data.refresh);
         }
-        message.success('Google Login successful!');
-        router.push('/');
+        message.success("Google Login successful!");
+        router.push("/");
       } else {
-        message.error('Login failed: Token not received from server');
+        message.error("Login failed: Token not received from server");
       }
     },
     onError: (error: any) => {
       if (axios.isAxiosError(error)) {
-        const msg = error.response?.data?.message || 'Google Login failed.';
+        const msg = error.response?.data?.message || "Google Login failed.";
         setErrorMessage(msg);
       } else {
-        setErrorMessage('An unexpected error occurred during Google Login.');
+        setErrorMessage("An unexpected error occurred during Google Login.");
       }
-      console.error(error);
-    }
+    },
   });
 
   const onFinish = (values: any) => {
@@ -93,12 +100,12 @@ const LoginPage = () => {
         variant="outlined"
       >
         <div className="mb-10 text-center">
-           <Title level={2} className="!text-white !font-bold !mb-2 !text-3xl">
-             Welcome Back
-           </Title>
-           <Text className="text-[#9ba1b0] text-base">
-             Please login with your account
-           </Text>
+          <Title level={2} className="!text-white !font-bold !mb-2 !text-3xl">
+            Welcome Back
+          </Title>
+          <Text className="text-[#9ba1b0] text-base">
+            Please login with your account
+          </Text>
         </div>
 
         {errorMessage && (
@@ -122,23 +129,23 @@ const LoginPage = () => {
             name="email"
             label={<span className="text-[#ECECF1] font-medium">Email</span>}
             rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' },
+              { required: true, message: "Please input your email!" },
+              { type: "email", message: "Please enter a valid email!" },
             ]}
           >
-            <Input 
-              placeholder="Enter your email" 
-              className="!bg-[#2b2d35] !border-[#40434e] !text-[#ECECF1] h-12 rounded-xl focus:!border-[#10A37F] hover:!border-[#10A37F]" 
+            <Input
+              placeholder="Enter your email"
+              className="!bg-[#2b2d35] !border-[#40434e] !text-[#ECECF1] h-12 rounded-xl focus:!border-[#10A37F] hover:!border-[#10A37F]"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
             label={<span className="text-[#ECECF1] font-medium">Password</span>}
-            rules={[{ required: true, message: 'Please input your password!' }]}
+            rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <Input.Password 
-              placeholder="Enter your password" 
+            <Input.Password
+              placeholder="Enter your password"
               className="!bg-[#2b2d35] !border-[#40434e] !text-[#ECECF1] h-12 rounded-xl focus:!border-[#10A37F] hover:!border-[#10A37F]"
             />
           </Form.Item>
@@ -156,36 +163,54 @@ const LoginPage = () => {
           </Form.Item>
 
           <div className="flex justify-center mb-8">
-             <GoogleLogin
-               onSuccess={(credentialResponse) => {
-                 if (credentialResponse.credential) {
-                   googleLoginMutation.mutate(credentialResponse.credential);
-                 }
-               }}
-               onError={() => {
-                 message.error('Google Login Failed');
-               }}
-               theme="filled_black"
-               shape="pill"
-               width="100%"
-             />
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                if (credentialResponse.credential) {
+                  googleLoginMutation.mutate(credentialResponse.credential);
+                }
+              }}
+              onError={() => {
+                message.error("Google Login Failed");
+              }}
+              theme="filled_black"
+              shape="pill"
+              width="100%"
+            />
           </div>
-          
+
           <div className="space-y-3 pt-6 border-t border-[#40434e]">
             <div>
-               <Text className="text-[#8E8EA0] text-sm">
-                 Verify your email <Link href="/verify-email" className="text-[#3b82f6] hover:underline font-medium ml-1">Here</Link>
-               </Text>
+              <Text className="text-[#8E8EA0] text-sm">
+                Verify your email{" "}
+                <Link
+                  href="/verify-email"
+                  className="text-[#3b82f6] hover:underline font-medium ml-1"
+                >
+                  Here
+                </Link>
+              </Text>
             </div>
             <div>
-               <Text className="text-[#8E8EA0] text-sm">
-                 Don't have an account? <Link href="/register" className="text-[#3b82f6] hover:underline font-medium ml-1">Register</Link>
-               </Text>
+              <Text className="text-[#8E8EA0] text-sm">
+                Don't have an account?{" "}
+                <Link
+                  href="/register"
+                  className="text-[#3b82f6] hover:underline font-medium ml-1"
+                >
+                  Register
+                </Link>
+              </Text>
             </div>
             <div>
-               <Text className="text-[#8E8EA0] text-sm">
-                 Forgot password? <Link href="#" className="text-[#3b82f6] hover:underline font-medium ml-1">Here</Link>
-               </Text>
+              <Text className="text-[#8E8EA0] text-sm">
+                Forgot password?{" "}
+                <Link
+                  href="#"
+                  className="text-[#3b82f6] hover:underline font-medium ml-1"
+                >
+                  Here
+                </Link>
+              </Text>
             </div>
           </div>
         </Form>
