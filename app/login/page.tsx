@@ -1,6 +1,6 @@
 'use client';
 
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import React from 'react';
 import { Form, Input, Button, Card, Typography, Alert } from 'antd';
 import { useMutation } from '@tanstack/react-query';
@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { message } from '@/lib/antd-static';
 import Link from 'next/link';
-import { FcGoogle } from 'react-icons/fc';
 
 const { Title, Text } = Typography;
 
@@ -80,15 +79,6 @@ const LoginPage = () => {
       }
       console.error(error);
     }
-  });
-
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      googleLoginMutation.mutate(tokenResponse.access_token);
-    },
-    onError: () => {
-      message.error('Google Login Unified Failed');
-    },
   });
 
   const onFinish = (values: any) => {
@@ -166,18 +156,19 @@ const LoginPage = () => {
           </Form.Item>
 
           <div className="flex justify-center mb-8">
-             <button
-                type="button"
-                onClick={() => handleGoogleLogin()}
-                className="flex items-center w-full h-14 px-2 bg-[#1a1c22] border border-[#40434e] rounded-full hover:bg-[#2b2d35] transition-colors group"
-             >
-                <div className="flex items-center justify-center w-10 h-10 bg-white rounded-full ml-1">
-                   <FcGoogle className="text-2xl" />
-                </div>
-                <span className="flex-1 text-[#ECECF1] text-lg font-medium">
-                   Login dengan Google
-                </span>
-             </button>
+             <GoogleLogin
+               onSuccess={(credentialResponse) => {
+                 if (credentialResponse.credential) {
+                   googleLoginMutation.mutate(credentialResponse.credential);
+                 }
+               }}
+               onError={() => {
+                 message.error('Google Login Failed');
+               }}
+               theme="filled_black"
+               shape="pill"
+               width="100%"
+             />
           </div>
           
           <div className="space-y-3 pt-6 border-t border-[#40434e]">
