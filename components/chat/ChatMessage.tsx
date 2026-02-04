@@ -5,6 +5,9 @@ import { Button, Tooltip, Avatar } from "antd";
 import { CopyOutlined, CheckOutlined, UserOutlined } from "@ant-design/icons";
 import ChartRenderer, { ChartConfig } from "./ChartRenderer";
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -68,8 +71,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           <div className="font-medium mb-1 text-[10px] md:text-xs">
             {isUser ? "You" : "AI Assistant"}
           </div>
-          <div className="text-[#D1D5DB] text-sm md:text-base md:leading-7 whitespace-pre-wrap break-words">
-            {message.content}
+          <div className="text-[#D1D5DB] text-sm md:text-base md:leading-7 break-words overflow-x-auto">
+            <div className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-[#2D2D3A] prose-pre:border prose-pre:border-[#565869] max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
           </div>
           {message.chartConfig && (
             <div className="mt-4 w-full overflow-x-auto custom-scrollbar">

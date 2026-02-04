@@ -50,7 +50,7 @@ const RegisterPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-[#2b2d35] p-4 font-sans">
       <Card
         className="w-full max-w-md border-[#40434e] bg-[#1a1c22] shadow-2xl rounded-2xl p-4"
-        bordered={true}
+        variant="outlined"
       >
         <div className="mb-10 text-center">
           <Title level={2} className="!text-white !font-bold !mb-2 !text-3xl">
