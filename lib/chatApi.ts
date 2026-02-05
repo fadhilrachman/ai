@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const chatApi = axios.create({
-  baseURL: 'https://noc-rag-poc.arnatech.id/api',
+  baseURL: process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://noc-rag-poc.arnatech.id/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -42,6 +42,14 @@ chatApi.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Check for unexpected HTML responses (usually 500 errors from proxy/Nginx)
+    if (
+      error.response?.status === 500 &&
+      !error.response?.headers?.["content-type"]?.includes("application/json")
+    ) {
+      throw new Error(`Unexpected HTML response from server`);
+    }
+
     // Force redirect to login on 403 Forbidden
     if (error.response?.status === 403) {
       if (typeof window !== 'undefined') {
@@ -53,6 +61,8 @@ chatApi.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log("Token expired on Chat API, attempting to refresh...");
+
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
@@ -83,14 +93,20 @@ chatApi.interceptors.response.use(
 
       try {
         // We use the SSO API URL for refreshing
-        const response = await axios.post('https://sso.arnatech.id/api/auth/token/refresh/', {
+        const ssoBaseUrl = process.env.NEXT_PUBLIC_SSO_API_URL || 'https://sso.arnatech.id/api';
+        const response = await axios.post(`${ssoBaseUrl}/auth/token/refresh/`, {
           refresh: refreshToken,
         });
 
-        const { access } = response.data;
+        console.log("Chat API refresh response:", response.data);
+
+        const { access, refresh } = response.data;
 
         if (typeof window !== 'undefined') {
           localStorage.setItem('access_token', access);
+          if (refresh) {
+            localStorage.setItem('refresh_token', refresh);
+          }
         }
 
         chatApi.defaults.headers.common.Authorization = `Bearer ${access}`;
@@ -101,6 +117,7 @@ chatApi.interceptors.response.use(
 
         return chatApi(originalRequest);
       } catch (err: any) {
+        console.error("Error during Chat API token refresh:", err);
         processQueue(err, null);
         isRefreshing = false;
         if (typeof window !== 'undefined') {
