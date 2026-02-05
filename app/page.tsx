@@ -238,7 +238,7 @@ function HomeContent() {
         {/* Document Modal Toggle (Floating Button on Desktop, hidden or relocated on Mobile) */}
         {!modal.documentReferences && (
           <div className="fixed top-4 right-4 z-20">
-             <Button
+              <Button
                 type="primary"
                 shape="round"
                 icon={<MenuOutlined />}

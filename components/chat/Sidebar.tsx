@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "antd";
-import { 
-  PlusOutlined, 
+import {
+  PlusOutlined,
   MessageOutlined,
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 
 interface ChatHistory {
@@ -54,19 +54,24 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Mobile Backdrop */}
       {isMobile && !isCollapsed && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
           onClick={onClose}
         />
       )}
-      
+
       <div
         className={`
           fixed md:relative z-50 flex flex-col h-screen bg-[#171717] border-r border-[#2D2D3A]
           transition-all duration-300 ease-in-out
-          ${isMobile 
-            ? (isCollapsed ? "-translate-x-full" : "translate-x-0 w-72") 
-            : (isCollapsed ? "w-16" : "w-64")
+          ${
+            isMobile
+              ? isCollapsed
+                ? "-translate-x-full"
+                : "translate-x-0 w-72"
+              : isCollapsed
+                ? "w-16"
+                : "w-64"
           }
         `}
       >
@@ -74,10 +79,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between p-3 border-b border-[#2D2D3A]">
           {(!isCollapsed || isMobile) && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#10A37F] flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AI</span>
+              <div className="w-8 h-8 flex items-center justify-center bg-white rounded-lg p-1">
+                <img
+                  src="/icon.png"
+                  alt="Arna Tech"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-white font-medium">AI Chat</span>
+              <span className="text-white font-medium">Arna Tech</span>
             </div>
           )}
           {!isMobile && (
@@ -99,8 +108,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* New Chat Button */}
-        <div className={`p-3 ${!isMobile && isCollapsed ? "flex justify-center" : ""}`}>
-          <Tooltip title={!isMobile && isCollapsed ? "New Chat" : ""} placement="right">
+        <div
+          className={`p-3 ${!isMobile && isCollapsed ? "flex justify-center" : ""}`}
+        >
+          <Tooltip
+            title={!isMobile && isCollapsed ? "New Chat" : ""}
+            placement="right"
+          >
             <Button
               type="default"
               icon={<PlusOutlined />}
@@ -130,9 +144,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
           <div className="space-y-1">
             {chatHistory.map((chat) => (
-              <Tooltip 
-                key={chat.id} 
-                title={!isMobile && isCollapsed ? chat.title : ""} 
+              <Tooltip
+                key={chat.id}
+                title={!isMobile && isCollapsed ? chat.title : ""}
                 placement="right"
               >
                 <div
@@ -143,9 +157,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                   className={`
                     flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
                     transition-all duration-200
-                    ${activeChatId === chat.id 
-                      ? "bg-[#2D2D3A] text-white" 
-                      : "text-[#ACACBE] hover:bg-[#2D2D3A] hover:text-white"
+                    ${
+                      activeChatId === chat.id
+                        ? "bg-[#2D2D3A] text-white"
+                        : "text-[#ACACBE] hover:bg-[#2D2D3A] hover:text-white"
                     }
                   `}
                 >
@@ -162,7 +177,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Footer */}
         <div className="p-3 border-t border-[#2D2D3A]">
           <div className="space-y-1">
-            <Tooltip title={!isMobile && isCollapsed ? "Settings" : ""} placement="right">
+            <Tooltip
+              title={!isMobile && isCollapsed ? "Settings" : ""}
+              placement="right"
+            >
               <div
                 className={`
                   flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
@@ -171,11 +189,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 `}
               >
                 <SettingOutlined className="text-sm flex-shrink-0" />
-                {(!isCollapsed || isMobile) && <span className="text-sm">Settings</span>}
+                {(!isCollapsed || isMobile) && (
+                  <span className="text-sm">Settings</span>
+                )}
               </div>
             </Tooltip>
-            
-            <Tooltip title={!isMobile && isCollapsed ? "Logout" : ""} placement="right">
+
+            <Tooltip
+              title={!isMobile && isCollapsed ? "Logout" : ""}
+              placement="right"
+            >
               <div
                 onClick={onLogout}
                 className={`
@@ -185,11 +208,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 `}
               >
                 <LogoutOutlined className="text-sm flex-shrink-0" />
-                {(!isCollapsed || isMobile) && <span className="text-sm">Logout</span>}
+                {(!isCollapsed || isMobile) && (
+                  <span className="text-sm">Logout</span>
+                )}
               </div>
             </Tooltip>
 
-            <Tooltip title={!isMobile && isCollapsed ? "Profile" : ""} placement="right">
+            <Tooltip
+              title={!isMobile && isCollapsed ? "Profile" : ""}
+              placement="right"
+            >
               <div
                 className={`
                   flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer
@@ -200,7 +228,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="w-6 h-6 rounded-full bg-[#10A37F] flex items-center justify-center flex-shrink-0">
                   <UserOutlined className="text-xs text-white" />
                 </div>
-                {(!isCollapsed || isMobile) && <span className="text-sm">User</span>}
+                {(!isCollapsed || isMobile) && (
+                  <span className="text-sm">User</span>
+                )}
               </div>
             </Tooltip>
           </div>
