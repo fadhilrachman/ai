@@ -82,11 +82,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="w-8 h-8 flex items-center justify-center bg-white rounded-lg p-1">
                 <img
                   src="/icon.png"
-                  alt="Arna Tech"
+                  alt="Telkomsel"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-white font-medium">Arna Tech</span>
+              <span className="text-white font-medium">Telkomsel</span>
             </div>
           )}
           {!isMobile && (
