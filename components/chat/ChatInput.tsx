@@ -54,7 +54,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Tanyakan sesuatu ke Arna Tech..."
+          placeholder="Tanyakan sesuatu ke Telkomsel..."
           disabled={disabled || isLoading}
           rows={1}
           className={`
